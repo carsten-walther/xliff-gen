@@ -1,0 +1,16 @@
+{
+  "name": "carstenwalther/xliff-gen",
+  "description": "XLIFF Generator",
+  "license": "GPL-3.0-or-later",
+  "require": {
+    "php": ">=7.3"
+  },
+  "require-dev": {
+
+  },
+  "autoload": {
+    "psr-4": {
+      "CarstenWalther\\XliffGen\\": "src"
+    }
+  }
+}
