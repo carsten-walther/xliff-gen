@@ -1,0 +1,21 @@
+{if errorMessages}
+{foreach $errorMessages as $errorMessage}
+{include file="../Partials/Alert.html" message=errorMessage}
+{/foreach}
+{/if}
+
+<div class="row">
+    <div class="col-8">
+
+        {if uploadedFiles}
+        {foreach $uploadedFiles as $uploadedFile}
+        <p>{$uploadedFile}</p>
+        {/foreach}
+        {/if}
+
+        <div class="py-2"></div>
+        {include file="../Partials/Form.html" languages=$languages}
+        <div class="pt-2 pb-4"></div>
+
+    </div>
+</div>

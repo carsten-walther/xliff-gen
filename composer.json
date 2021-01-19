@@ -2,15 +2,6 @@
     "name": "carstenwalther/xliff",
     "description": "XLIFF Generator",
     "type": "project",
-    "require": {
-        "php": ">=7.3",
-        "twig/twig": "^1.6.3"
-    }
-    ,
-    "require-dev": {
-        "roave/security-advisories": "dev-master",
-        "carstenwalther/xliff-gen": "*"
-    },
     "license": "GPL-3.0-or-later",
     "authors": [
         {
@@ -18,14 +9,13 @@
             "email": "walther.carsten@web.de"
         }
     ],
-    "minimum-stability": "dev",
-    "repositories": [
-        {
-            "type": "path",
-            "url": "packages/carstenwalther/xliff-gen",
-            "options": {
-                "symlink": true
-            }
+    "require": {
+        "php": "~7.3",
+        "smarty/smarty": "~3.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "CarstenWalther\\XliffGen\\": "app/Classes"
         }
-    ]
+    }
 }
