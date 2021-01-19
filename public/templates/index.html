@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Dirty Little Helper :: Installed</title>
+    <title>XLIFF Generator</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
 </head>
 <body class="d-flex flex-column h-100">
@@ -23,7 +23,7 @@
 
             {% if errorMessages %}
                 {% for errorMessage in errorMessages %}
-                    {{ include('_errorMessage.html', errorMessage) }}
+                    {{ include('partials/alert.html', errorMessage) }}
                 {% endfor %}
             {% endif %}
 
@@ -33,18 +33,9 @@
                 {% endfor %}
             {% endif %}
 
-            <form class="mb-4" enctype="multipart/form-data" action="" method="POST">
-                <input type="hidden" name="MAX_FILE_SIZE" value="65536">
-                <div class="form-group mb-4">
-                    <label for="files" class="form-label">
-                        Template files
-                    </label>
-                    <input type="file" class="form-control" name="files[]" id="files" accept="text/html" multiple>
-                </div>
-                <button type="submit" class="btn btn-primary">
-                    Submit
-                </button>
-            </form>
+			<div class="py-2"></div>
+			{{ include('partials/form.html') }}
+			<div class="pt-2 pb-4"></div>
 
             <p class="text-muted">
                 &copy; {{ "now"|date('Y', timezone="Europe/Paris") }} | Made with ♥ by Carsten Walther

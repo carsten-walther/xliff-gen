@@ -1,0 +1,59 @@
+<form class="my-4" enctype="multipart/form-data" action="" method="POST">
+	<div class="hide">
+		<input type="hidden" name="MAX_FILE_SIZE" value="65536">
+	</div>
+	<div class="row mb-4">
+		<label for="productName" class="col-sm-2 col-form-label">
+			Product name
+		</label>
+		<div class="col-sm-10">
+			<input type="text" name="productName" id="productName" placeholder="Product name" class="form-control">
+		</div>
+	</div>
+	<div class="row mb-4">
+		<label for="sourceLanguage" class="col-sm-2 col-form-label">
+			Source language
+		</label>
+		<div class="col-sm-10">
+			<select name="sourceLanguage" id="sourceLanguage" class="form-select">
+				{% if languages %}
+				{% for language in languages %}
+				<option value="{{ language.id }}">[{{ language.id }}] {{ language.title }}</option>
+				{% endfor %}
+				{% endif %}
+			</select>
+		</div>
+	</div>
+	<div class="row mb-4">
+		<label for="targetLanguage" class="col-sm-2 col-form-label">
+			Target language
+		</label>
+		<div class="col-sm-10">
+			<select name="targetLanguage" id="targetLanguage" class="form-select" multiple>
+				{% if languages %}
+				{% for language in languages %}
+				<option value="{{ language.id }}">[{{ language.id }}] {{ language.title }}</option>
+				{% endfor %}
+				{% endif %}
+			</select>
+		</div>
+	</div>
+	<div class="row mb-4">
+		<label for="files" class="col-sm-2 col-form-label">
+			Template files
+		</label>
+		<div class="col-sm-10">
+			<input type="file" name="files[]" id="files" accept="text/html" class="form-control" multiple>
+		</div>
+	</div>
+	<div class="row mb-4">
+		<div class="offset-sm-2 col-sm-10">
+			<button type="submit" class="btn btn-primary">
+				Submit
+			</button>
+			<button type="reset" class="btn btn-danger">
+				Reset
+			</button>
+		</div>
+	</div>
+</form>
