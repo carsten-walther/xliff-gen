@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.0" xmlns="urn:oasis:names:tc:xliff:document:1.1">
+    <file source-language="{$xlf.sourceLanguage}" {if $xlf.targetLanguage}target-language="{$xlf.targetLanguage}"{/if} datatype="plaintext" {if $xlf.original}original="{$xlf.original}"{/if} date="{$xlf.date|date_format:'c'}" product-name="{$xlf.productName}">
+        <header/>
+        <body>
+            {if $xlf.translationUnits}
+            {foreach $translationUnits as $translationUnit}
+            <trans-unit id="{$translationUnit.id}" resname="{$translationUnit.resname}">
+                <source>{$translationUnit.source}</source>
+                {if $translationUnit.target}<target>{$translationUnit.target}</target>{/if}
+            </trans-unit>
+            {/foreach}
+            {/if}
+        </body>
+    </file>
+</xliff>

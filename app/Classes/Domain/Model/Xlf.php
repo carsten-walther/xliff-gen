@@ -1,10 +1,10 @@
 <?php
 
-namespace CarstenWalther\XliffGen\Model;
+namespace CarstenWalther\XliffGen\Domain\Model;
 
 /**
  * Class Xlf
- * @package CarstenWalther\XliffGen\Model
+ * @package CarstenWalther\XliffGen\Domain\Model
  */
 class Xlf
 {
@@ -34,7 +34,7 @@ class Xlf
     protected $productName;
 
     /**
-     * @var array<\CarstenWalther\XliffGen\Model\TranslationUnit>
+     * @var array<\CarstenWalther\XliffGen\Domain\Model\TranslationUnit>
      */
     protected $translationUnits;
 
@@ -143,7 +143,7 @@ class Xlf
     }
 
     /**
-     * @return array<\CarstenWalther\XliffGen\Model\TranslationUnit>
+     * @return array<\CarstenWalther\XliffGen\Domain\Model\TranslationUnit>
      */
     public function getTranslationUnits() : array
     {
@@ -151,7 +151,7 @@ class Xlf
     }
 
     /**
-     * @param array<\CarstenWalther\XliffGen\Model\TranslationUnit> $translationUnits
+     * @param array<\CarstenWalther\XliffGen\Domain\Model\TranslationUnit> $translationUnits
      *
      * @return Xlf
      */
@@ -162,11 +162,11 @@ class Xlf
     }
 
     /**
-     * @param \CarstenWalther\XliffGen\Model\TranslationUnit $translationUnit
+     * @param \CarstenWalther\XliffGen\Domain\Model\TranslationUnit $translationUnit
      *
      * @return $this
      */
-    public function addTranslationUnit(\CarstenWalther\XliffGen\Model\TranslationUnit $translationUnit) : Xlf
+    public function addTranslationUnit(\CarstenWalther\XliffGen\Domain\Model\TranslationUnit $translationUnit) : Xlf
     {
         array_push($this->translationUnits, $translationUnit);
         return $this;

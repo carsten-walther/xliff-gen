@@ -47,26 +47,36 @@ class View
     /**
      * View constructor.
      *
-     * @param        $layoutPath
-     * @param        $templatePath
      * @param string $templateEngineObject
      */
-    public function __construct($layoutPath, $templatePath, $templateEngineObject = 'Smarty')
+    public function __construct($templateEngineObject = 'Smarty')
+    {
+        $this->templateEngine = new $templateEngineObject;
+        $this->templateEngine->debugging = true;
+    }
+
+    /**
+     * @param string $layoutPath
+     */
+    public function setLayoutPath(string $layoutPath) : void
     {
         if ($layoutPath && is_dir($layoutPath)) {
             $this->layoutPath = $layoutPath;
         } else {
             throw new \InvalidArgumentException('Layout path must be a valid path.');
         }
+    }
 
+    /**
+     * @param string $templatePath
+     */
+    public function setTemplatePath(string $templatePath) : void
+    {
         if ($templatePath && is_dir($templatePath)) {
             $this->templatePath = $templatePath;
         } else {
             throw new \InvalidArgumentException('Template path must be a valid path.');
         }
-
-        $this->templateEngine = new $templateEngineObject;
-        $this->templateEngine->debugging = true;
     }
 
     /**
@@ -95,16 +105,42 @@ class View
     }
 
     /**
-     * @param $template
+     * @param       $template
+     * @param false $return
      *
+     * @return false|string
      * @throws \SmartyException
      */
-    public function render($template) : void
+    public function render($template, $return = false)
     {
         $this->templateEngine->assign('title', $this->pageTitle);
         $this->templateEngine->assign('content', $this->renderContent($template));
 
-        echo $this->templateEngine->fetch($this->layoutPath . $this->pageTemplate);
+        $result = $this->templateEngine->fetch($this->layoutPath . $this->pageTemplate);
+
+        if ($return) {
+            return $result;
+        }
+
+        echo $result;
+    }
+
+    /**
+     * @param       $template
+     * @param false $return
+     *
+     * @return false|string
+     * @throws \SmartyException
+     */
+    public function renderTemplate($template, $return = false)
+    {
+        $result = $this->templateEngine->fetch($this->templatePath . $template);
+
+        if ($return) {
+            return $result;
+        }
+
+        echo $result;
     }
 
     /**

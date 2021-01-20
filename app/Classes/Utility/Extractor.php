@@ -1,13 +1,10 @@
 <?php
 
-namespace CarstenWalther\XliffGen;
-
-use CarstenWalther\XliffGen\Model\TranslationUnit;
-use CarstenWalther\XliffGen\Model\Xlf;
+namespace CarstenWalther\XliffGen\Utility;
 
 /**
  * Class Extractor
- * @package CarstenWalther\XliffGen
+ * @package CarstenWalther\XliffGen\Utility
  */
 class Extractor
 {
@@ -20,10 +17,6 @@ class Extractor
 
     /**
      * @var array
-     *
-     * [
-     *      ''
-     * ]
      */
     protected $configuration;
 
@@ -40,9 +33,9 @@ class Extractor
     }
 
     /**
-     * @return null|\CarstenWalther\XliffGen\Model\Xlf
+     * @return null|\CarstenWalther\XliffGen\Domain\Model\Xlf
      */
-    public function extract() :? \CarstenWalther\XliffGen\Model\Xlf
+    public function extract() :? \CarstenWalther\XliffGen\Domain\Model\Xlf
     {
         $xlf = null;
         $matches = [];
@@ -51,7 +44,7 @@ class Extractor
 
         if (count($matches) > 0) {
 
-            $xlf = new Xlf();
+            $xlf = new \CarstenWalther\XliffGen\Domain\Model\Xlf();
 
             $xlf->setSourceLanguage($this->configuration['sourceLanguage'] ?: null);
             $xlf->setTargetLanguage($this->configuration['targetLanguage'] ?: null);
@@ -61,7 +54,7 @@ class Extractor
 
             foreach ($matches as $match) {
 
-                $translationUnit = new TranslationUnit();
+                $translationUnit = new \CarstenWalther\XliffGen\Domain\Model\TranslationUnit();
 
                 $translationUnit->setId($match[1]);
                 $translationUnit->setResname($match[1]);

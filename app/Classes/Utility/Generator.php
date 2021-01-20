@@ -1,6 +1,6 @@
 <?php
 
-namespace CarstenWalther\XliffGen;
+namespace CarstenWalther\XliffGen\Utility;
 
 /**
  * Class Generator
@@ -8,49 +8,50 @@ namespace CarstenWalther\XliffGen;
  */
 class Generator
 {
-    const TEMPLATE_DEFAULT = 'template.xlf';
+    const TEMPLATE_DEFAULT = 'locallang.xlf';
 
     /**
-     * @var \CarstenWalther\XliffGen\Model\Xlf
+     * @var \CarstenWalther\XliffGen\Domain\Model\Xlf
      */
     protected $xlf;
 
     /**
-     * @var \Twig\Loader\FilesystemLoader
+     * @var string
      */
-    protected $filesystemLoader;
+    protected $basePath;
 
     /**
-     * @var \Twig\Environment
+     * @var \CarstenWalther\XliffGen\View\View
      */
-    protected $environment;
+    protected $view;
 
     /**
      * Generator constructor.
      *
-     * @param \CarstenWalther\XliffGen\Model\Xlf $xlf
+     * @param \CarstenWalther\XliffGen\Domain\Model\Xlf|null $xlf
+     * @param string                                         $basePath
+     *
+     * @throws \SmartyException
      */
-    public function __construct(\CarstenWalther\XliffGen\Model\Xlf $xlf)
+    public function __construct(\CarstenWalther\XliffGen\Domain\Model\Xlf $xlf = null, string $basePath)
     {
         $this->xlf = $xlf;
+        $this->basePath = $basePath;
 
-        /** @var \Twig\Loader\FilesystemLoader $loader */
-        $this->filesystemLoader = new \Twig\Loader\FilesystemLoader('packages/carstenwalther/xliff-gen/src/templates');
-
-        /** @var \Twig\Environment $twig */
-        $this->environment = new \Twig\Environment($this->filesystemLoader);
+        $this->generate();
     }
 
     /**
-     * @return string
-     * @throws \Twig\Error\LoaderError
-     * @throws \Twig\Error\RuntimeError
-     * @throws \Twig\Error\SyntaxError
+     * @return false|string
+     * @throws \SmartyException
      */
-    public function generate() : string
+    public function generate()
     {
-        return $this->environment->render(self::TEMPLATE_DEFAULT, [
-            'xlf' => $this->xlf
-        ]);
+        $this->view = new \CarstenWalther\XliffGen\View\View();
+        $this->view->setBasePath($this->basePath);
+        $this->view->setTemplatePath($this->basePath . '/Resources/Private/Templates/');
+        $this->view->assign('xlf', $this->xlf);
+
+        return $this->view->renderTemplate(self::TEMPLATE_DEFAULT, true);
     }
 }

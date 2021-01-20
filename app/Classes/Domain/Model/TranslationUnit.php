@@ -1,10 +1,10 @@
 <?php
 
-namespace CarstenWalther\XliffGen\Model;
+namespace CarstenWalther\XliffGen\Domain\Model;
 
 /**
  * Class TranslationUnit
- * @package CarstenWalther\XliffGen\Model
+ * @package CarstenWalther\XliffGen\Domain\Model
  */
 class TranslationUnit
 {

@@ -36,4 +36,7 @@ function getBaseUrl() : string
 }
 
 $baseUrl = getBaseUrl();
-$controller = new \CarstenWalther\XliffGen\Controller\XliffGenController($basePath . '/app/', $baseUrl);
+$controller = new \CarstenWalther\XliffGen\Controller\XliffGenController($basePath . '/app/', $baseUrl, [
+    'type' => 'csv',
+    'file' => $basePath . '/app/Resources/Public/Languages.csv'
+]);
