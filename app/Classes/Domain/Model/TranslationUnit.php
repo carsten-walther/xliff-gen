@@ -37,6 +37,19 @@ class TranslationUnit
     }
 
     /**
+     * @return array
+     */
+    public function toArray() : array
+    {
+        return [
+            'id' => $this->getId(),
+            'resname' => $this->getResname(),
+            'source' => $this->getSource(),
+            'target' => $this->getTarget()
+        ];
+    }
+
+    /**
      * @return string
      */
     public function getId() : string

@@ -1,4 +1,4 @@
-{if errorMessages}
+{if $errorMessages}
 {foreach $errorMessages as $errorMessage}
 {include file="../Partials/Alert.html" message=errorMessage}
 {/foreach}
@@ -7,7 +7,7 @@
 <div class="row">
     <div class="col-8">
 
-        {if uploadedFiles}
+        {if $uploadedFiles}
         {foreach $uploadedFiles as $uploadedFile}
         <p>{$uploadedFile}</p>
         {/foreach}

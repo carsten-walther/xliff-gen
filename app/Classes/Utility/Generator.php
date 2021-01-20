@@ -50,7 +50,7 @@ class Generator
         $this->view = new \CarstenWalther\XliffGen\View\View();
         $this->view->setBasePath($this->basePath);
         $this->view->setTemplatePath($this->basePath . '/Resources/Private/Templates/');
-        $this->view->assign('xlf', $this->xlf);
+        $this->view->assign('xlf', $this->xlf->toArray());
 
         return $this->view->renderTemplate(self::TEMPLATE_DEFAULT, true);
     }

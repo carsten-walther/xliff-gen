@@ -60,11 +60,11 @@ class LanguageRepository extends AbstractCsvRepository
     }
 
     /**
-     * @param int $id
+     * @param string $id
      *
      * @return \CarstenWalther\XliffGen\Domain\Model\Language
      */
-    public function findById(int $id) : \CarstenWalther\XliffGen\Domain\Model\Language
+    public function findById(string $id) : \CarstenWalther\XliffGen\Domain\Model\Language
     {
         $languages = $this->findAll();
 
@@ -97,16 +97,8 @@ class LanguageRepository extends AbstractCsvRepository
     /**
      * @return \CarstenWalther\XliffGen\Domain\Model\Language
      */
-    function current() : object
+    public function current() : object
     {
         return $this->language;
-    }
-
-    /**
-     * @return bool
-     */
-    function valid() : bool
-    {
-        return is_object($this->current());
     }
 }

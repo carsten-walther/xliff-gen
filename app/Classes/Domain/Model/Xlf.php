@@ -4,6 +4,7 @@ namespace CarstenWalther\XliffGen\Domain\Model;
 
 /**
  * Class Xlf
+ *
  * @package CarstenWalther\XliffGen\Domain\Model
  */
 class Xlf
@@ -48,9 +49,30 @@ class Xlf
     }
 
     /**
+     * @return array
+     */
+    public function toArray() : array
+    {
+        $translationUnits = [];
+
+        foreach ($this->getTranslationUnits() as $translationUnit) {
+            $translationUnits[] = $translationUnit->toArray();
+        }
+
+        return [
+            'sourceLanguage' => $this->getSourceLanguage(),
+            'targetLanguage' => $this->getTargetLanguage(),
+            'original' => $this->getOriginal(),
+            'date' => $this->getDate(),
+            'productName' => $this->getProductName(),
+            'translationUnits' => $translationUnits
+        ];
+    }
+
+    /**
      * @return string
      */
-    public function getSourceLanguage() :? string
+    public function getSourceLanguage() : ?string
     {
         return $this->sourceLanguage;
     }
@@ -62,14 +84,14 @@ class Xlf
      */
     public function setSourceLanguage(string $sourceLanguage = null) : Xlf
     {
-        $this->sourceLanguage = $sourceLanguage ?: 'en';
+        $this->sourceLanguage = $sourceLanguage ? : 'en';
         return $this;
     }
 
     /**
      * @return string
      */
-    public function getTargetLanguage() :? string
+    public function getTargetLanguage() : ?string
     {
         return $this->targetLanguage;
     }
@@ -88,7 +110,7 @@ class Xlf
     /**
      * @return string
      */
-    public function getOriginal() :? string
+    public function getOriginal() : ?string
     {
         return $this->original;
     }
@@ -126,7 +148,7 @@ class Xlf
     /**
      * @return string
      */
-    public function getProductName() :? string
+    public function getProductName() : ?string
     {
         return $this->productName;
     }
@@ -136,9 +158,9 @@ class Xlf
      *
      * @return Xlf
      */
-    public function setProductName(string $productName = null) :? Xlf
+    public function setProductName(string $productName = null) : ?Xlf
     {
-        $this->productName = $productName ?: 'your_extention_name';
+        $this->productName = $productName ? : 'your_extention_name';
         return $this;
     }
 

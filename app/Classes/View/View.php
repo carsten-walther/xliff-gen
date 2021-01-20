@@ -134,6 +134,10 @@ class View
      */
     public function renderTemplate($template, $return = false)
     {
+        foreach ($this->variables as $key => $variable) {
+            $this->templateEngine->assign($key, $variable);
+        }
+
         $result = $this->templateEngine->fetch($this->templatePath . $template);
 
         if ($return) {

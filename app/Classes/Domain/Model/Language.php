@@ -29,7 +29,7 @@ class Language
     /**
      * @return array
      */
-    public function toArray()
+    public function toArray() : array
     {
         return array(
             'id' => $this->getId(),
