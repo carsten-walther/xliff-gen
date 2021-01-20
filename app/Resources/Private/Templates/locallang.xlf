@@ -3,14 +3,16 @@
     <file source-language="{$xlf.sourceLanguage}"{if $xlf.targetLanguage} target-language="{$xlf.targetLanguage}"{/if} datatype="plaintext"{if $xlf.original} original="{$xlf.original}"{/if} date="{$xlf.date|date_format:'c'}" product-name="{$xlf.productName}">
         <header/>
         <body>
-            {if $xlf.translationUnits}
-            {foreach $xlf.translationUnits as $translationUnit}
+{if $xlf.translationUnits}
+{foreach $xlf.translationUnits as $translationUnit}
             <trans-unit id="{$translationUnit.id}" resname="{$translationUnit.resname}">
                 <source>{$translationUnit.source}</source>
-                {if $translationUnit.target}<target>{$translationUnit.target}</target>{/if}
+{if $translationUnit.target}
+                <target>{$translationUnit.target}</target>
+{/if}
             </trans-unit>
-            {/foreach}
-            {/if}
+{/foreach}
+{/if}
         </body>
     </file>
 </xliff>

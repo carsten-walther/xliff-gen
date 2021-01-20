@@ -37,8 +37,6 @@ class Generator
     {
         $this->xlf = $xlf;
         $this->basePath = $basePath;
-
-        $this->generate();
     }
 
     /**
