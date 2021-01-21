@@ -102,7 +102,6 @@ class XliffGenController
 
         $this->view->assign('baseUrl', $this->baseUrl);
         $this->view->assign('languages', $languages);
-        $this->view->assign('language', $this->languageRepository->findById('en'));
         $this->view->render('Index.html');
     }
 
