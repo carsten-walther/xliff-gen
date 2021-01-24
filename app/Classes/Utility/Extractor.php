@@ -9,7 +9,10 @@ namespace CarstenWalther\XliffGen\Utility;
  */
 class Extractor
 {
-    const PATTERN = '/[\<\{]f\:translate[\s(](?>\bkey\b|\bid\b)[=:]\s?["\'\\\\]?[\'"]?([a-zA-Z\.]*)["\'\\\\]["\']?\,?\s?(?>\bdefault\b)?[:=]?\s?["\'\\\\>]?["\']?(.*)(?|\\\\"\)\}|\\\\\'\)\}|\"\)\}|\'\)\}|"\/>|\'\/>|\<\/f\:translate\>)/m';
+    /**
+     * @var \CarstenWalther\XliffGen\Parser\Parser
+     */
+    protected $parser;
 
     /**
      * @var string
@@ -31,16 +34,19 @@ class Extractor
     {
         $this->sourceString = $sourceString;
         $this->configuration = $configuration;
+
+        $this->parser = new \CarstenWalther\XliffGen\Parser\Parser();
     }
 
     /**
+     * @param string $namespace
+     * @param string $method
+     *
      * @return null|\CarstenWalther\XliffGen\Domain\Model\Xlf
+     * @throws \Exception
      */
-    public function extract() : ?\CarstenWalther\XliffGen\Domain\Model\Xlf
+    public function extract($namespace = '', $method = '') : ?\CarstenWalther\XliffGen\Domain\Model\Xlf
     {
-        $xlf = null;
-        $matches = [];
-
         $xlf = new \CarstenWalther\XliffGen\Domain\Model\Xlf();
 
         $xlf->setSourceLanguage($this->configuration['sourceLanguage'] ? : null);
@@ -49,28 +55,43 @@ class Extractor
         $xlf->setProductName($this->configuration['productName'] ? : null);
         $xlf->setDate(new \DateTime());
 
-        preg_match_all(self::PATTERN, $this->sourceString, $matches, PREG_SET_ORDER, 0);
+        $parsedObjects = $this->parser->parse($this->sourceString);
 
-        if (count($matches) > 0) {
+        #die('<pre>' . print_r($parsedObjects, true) . '</pre>');
 
-            foreach ($matches as $match) {
+        if (count($parsedObjects) > 0) {
+            foreach ($parsedObjects as $parsedObject) {
 
-                $translationUnit = new \CarstenWalther\XliffGen\Domain\Model\TranslationUnit();
 
-                $translationUnit->setId($match[1]);
-                $translationUnit->setResname($match[1]);
-                $translationUnit->setSource($match[2]);
+                if ($namespace !== '' && $parsedObject['content']['namespace'] === $namespace) {
+                    if ($parsedObject['content']['method'] === $method) {
 
-                if ($this->configuration['targetLanguage']) {
-                    $translationUnit->setTarget($match[2]);
+                        $translationUnit = new \CarstenWalther\XliffGen\Domain\Model\TranslationUnit();
+
+                        #die('<pre>' . print_r($parsedObject['arguments']['default'], true) . '</pre>');
+
+                        $translationUnit->setId($parsedObject['arguments']['key']['content']['text']);
+                        $translationUnit->setResname($parsedObject['arguments']['key']['content']['text']);
+
+                        foreach ($parsedObject['arguments']['default'] as $default) {
+
+                            if (is_array($default) && array_key_exists('content', $default)) {
+                                $translationUnit->setSource($default['content']['text']);
+                                if ($this->configuration['targetLanguage']) {
+                                    $translationUnit->setTarget($default['content']['text']);
+                                }
+                                $translationUnit->setWrapWithCdata($this->shouldWrappedWithCdata($default['content']['text']));
+                                $translationUnit->setPreserveSpace($this->shouldPreserveSpace($default['content']['text'], $default['content']['text'], $this->configuration['targetLanguage']));
+                            }
+                        }
+
+                        $xlf->addTranslationUnit($translationUnit);
+                    }
                 }
-
-                $translationUnit->setPreserveSpace($this->shouldPreserveSpace($match[2], $match[2], $this->configuration['targetLanguage']));
-                $translationUnit->setWrapWithCdata($this->shouldWrappedWithCdata($match[2]));
-
-                $xlf->addTranslationUnit($translationUnit);
             }
         }
+
+        die('<pre>' . print_r($xlf, true) . '</pre>');
 
         return $xlf;
     }
@@ -86,11 +107,9 @@ class Extractor
     {
         $valueContainsSpacesOrLF = \strpos($value, '  ') !== false || \strpos($value, "\n") !== false;
         $enValueContainsSpacesOrLF = false;
-
         if ($targetLanguage !== 'default') {
             $enValueContainsSpacesOrLF = \strpos($enValue, '  ') !== false || \strpos($enValue, "\n") !== false;
         }
-
         return $valueContainsSpacesOrLF || $enValueContainsSpacesOrLF;
     }
 
@@ -102,11 +121,9 @@ class Extractor
     protected function shouldWrappedWithCdata($string) : bool
     {
         $shouldWrappedWithCdata = false;
-
         if ($string !== strip_tags($string)) {
             $shouldWrappedWithCdata = true;
         }
-
         return $shouldWrappedWithCdata;
     }
 }

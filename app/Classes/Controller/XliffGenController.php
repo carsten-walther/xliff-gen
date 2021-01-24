@@ -162,7 +162,7 @@ class XliffGenController
                             'original' => $arguments['sourceLanguage'] !== $targetLanguage ? 'locallang_' . strtolower($name) . '.xlf' : ''
                         ]);
 
-                        $xlf = $extractor->extract();
+                        $xlf = $extractor->extract('f', 'translate');
 
                         if ($xlf) {
                             $xlf->setType((array_key_exists('type', $arguments) ? $arguments['type'] : ''));
