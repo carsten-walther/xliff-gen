@@ -122,7 +122,7 @@ class XliffGenController
                 $arguments['productName'] = 'my_product_name';
             }
 
-            if (!$arguments['targetLanguages']) {
+            if ($arguments['addSourceLanguageToTargetLanguage']) {
                 $arguments['targetLanguages'][] = $arguments['sourceLanguage'];
             }
 
@@ -145,7 +145,7 @@ class XliffGenController
                             'sourceLanguage' => $arguments['sourceLanguage'],
                             'targetLanguage' => $arguments['sourceLanguage'] !== $targetLanguage ? $targetLanguage : null,
                             'productName' => $arguments['productName'],
-                            'original' => ''
+                            'original' => $arguments['sourceLanguage'] !== $targetLanguage ? 'locallang_' . strtolower($name) . '.xlf' : ''
                         ]);
 
                         $xlf = $extractor->extract();
