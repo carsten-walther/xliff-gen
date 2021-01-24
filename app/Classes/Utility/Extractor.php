@@ -40,17 +40,17 @@ class Extractor
         $xlf = null;
         $matches = [];
 
+        $xlf = new \CarstenWalther\XliffGen\Domain\Model\Xlf();
+
+        $xlf->setSourceLanguage($this->configuration['sourceLanguage'] ?: null);
+        $xlf->setTargetLanguage($this->configuration['targetLanguage'] ?: null);
+        $xlf->setOriginal($this->configuration['original'] ?: null);
+        $xlf->setProductName($this->configuration['productName'] ?: null);
+        $xlf->setDate(new \DateTime());
+
         preg_match_all(self::PATTERN, $this->sourceString, $matches, PREG_SET_ORDER, 0);
 
         if (count($matches) > 0) {
-
-            $xlf = new \CarstenWalther\XliffGen\Domain\Model\Xlf();
-
-            $xlf->setSourceLanguage($this->configuration['sourceLanguage'] ?: null);
-            $xlf->setTargetLanguage($this->configuration['targetLanguage'] ?: null);
-            $xlf->setOriginal($this->configuration['original'] ?: null);
-            $xlf->setProductName($this->configuration['productName'] ?: null);
-            $xlf->setDate(new \DateTime());
 
             foreach ($matches as $match) {
 
