@@ -3,56 +3,60 @@
 		<input type="hidden" name="MAX_FILE_SIZE" value="65536">
 	</div>
 	<div class="row mb-4">
-		<label for="productName" class="col-sm-3 col-form-label">
-			Product name *
+		<label for="productName" class="col-sm-2 col-form-label">
+			Product name&nbsp;*
 		</label>
-		<div class="col-sm-9">
-			<input type="text" name="productName" id="productName" placeholder="Product name" class="form-control" required>
+		<div class="col-sm-8">
+			<input type="text" name="productName" id="productName" placeholder="Product name" class="form-control" aria-describedby="productNameHelp" required>
+			<div id="productNameHelp" class="form-text">The product name is usually the name of out extension, e.g. my_extension.</div>
 		</div>
 	</div>
 	<div class="row mb-4">
-		<label for="sourceLanguage" class="col-sm-3 col-form-label">
-			Source language *
+		<label for="sourceLanguage" class="col-sm-2 col-form-label">
+			Source language&nbsp;*
 		</label>
-		<div class="col-sm-9">
-			<select name="sourceLanguage" id="sourceLanguage" class="form-select" required>
+		<div class="col-sm-8">
+			<select name="sourceLanguage" id="sourceLanguage" class="form-select" aria-describedby="sourceLanguageHelp" required>
 				{if $languages}
 				{foreach $languages as $language}
 				<option value="{$language.id}" {if $language.id == 'en'}selected{/if}>{$language.id} - {$language.title}</option>
 				{/foreach}
 				{/if}
 			</select>
+			<div id="sourceLanguageHelp" class="form-text">The source language is usually the default language, mostly it is "en".</div>
 		</div>
 	</div>
 	<div class="row mb-4">
-		<label for="targetLanguage" class="col-sm-3 col-form-label">
+		<label for="targetLanguage" class="col-sm-2 col-form-label">
 			Target language
 		</label>
-		<div class="col-sm-9">
-			<select name="targetLanguages[]" id="targetLanguage" class="form-select" multiple>
+		<div class="col-sm-8">
+			<select name="targetLanguages[]" id="targetLanguage" class="form-select" size="6" aria-describedby="targetLanguageHelp" multiple>
 				{if $languages}
 				{foreach $languages as $language}
 				<option value="{$language.id}">{$language.id} - {$language.title}</option>
 				{/foreach}
 				{/if}
 			</select>
+			<div id="targetLanguageHelp" class="form-text">Please select the target languages you want to generate the xliff xml files.</div>
 		</div>
 	</div>
 	<div class="row mb-4">
-		<label for="files" class="col-sm-3 col-form-label">
-			Template files *
+		<label for="files" class="col-sm-2 col-form-label">
+			Template files&nbsp;*
 		</label>
-		<div class="col-sm-9">
-			<input type="file" name="files[]" id="files" accept="text/html" class="form-control" multiple required>
+		<div class="col-sm-8">
+			<input type="file" name="files[]" id="files" accept="text/html" class="form-control" aria-describedby="fileHelp" multiple required>
+			<div id="fileHelp" class="form-text">Select one or more html template files. These files will be scanned for f:translate view helpers. The contained keys and the default values will be used for xliff generation.</div>
 		</div>
 	</div>
 	<div class="row mb-4">
-		<div class="offset-sm-3 col-sm-9">
+		<div class="offset-sm-2 col-sm-8">
 			<p class="small">Fields marked with (*) are required.</p>
 		</div>
 	</div>
 	<div class="row mb-4">
-		<div class="offset-sm-3 col-sm-9">
+		<div class="offset-sm-2 col-sm-8">
 			<button type="submit" class="btn btn-primary">
 				Submit
 			</button>
