@@ -22,15 +22,22 @@
             <p class="lead">
                 Please upload your HTML template file to extract XLIFF data.
             </p>
+
             {$content}
 
             <hr/>
-            <p class="fw-light text-muted float-start">
-                &copy; {$smarty.now|date_format: "%Y"} | Made with ♥ by Carsten Walther
-            </p>
-            <p class="fw-light text-muted float-end">
-                <a href="https://github.com/carsten-walther/xliff-gen" target="_blank">Visit xliff-gen on Github</a>
-            </p>
+            <div class="row">
+                <div class="col-12 col-md-6">
+                    <p class="fw-light text-muted text-center text-md-start">
+                        &copy; {$smarty.now|date_format: "%Y"} | Made with ♥ by Carsten Walther
+                    </p>
+                </div>
+                <div class="col-12 col-md-6">
+                    <p class="fw-light text-muted text-center text-md-end">
+                        <a href="https://github.com/carsten-walther/xliff-gen" target="_blank">Visit xliff-gen on Github</a>
+                    </p>
+                </div>
+            </div>
         </div>
     </main>
 
