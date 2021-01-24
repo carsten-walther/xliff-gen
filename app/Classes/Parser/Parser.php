@@ -17,8 +17,8 @@ class Parser
      * parsing ViewHelper arguments or not. This is used to parse arrays only as
      * ViewHelper argument.
      */
-    const CONTEXT_INSIDE_VIEWHELPER_ARGUMENTS = 1;
-    const CONTEXT_OUTSIDE_VIEWHELPER_ARGUMENTS = 2;
+    public const CONTEXT_INSIDE_VIEWHELPER_ARGUMENTS = 1;
+    public const CONTEXT_OUTSIDE_VIEWHELPER_ARGUMENTS = 2;
 
     /**
      * This regular expression splits the input string at all dynamic tags, AND
