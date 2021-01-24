@@ -4,8 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, shrink-to-fit=no">
     <title>{$title}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" integrity="sha256-FdatTf20PQr/rWg+cAKfl6j4/IY3oohFAJ7gVC3M34E=" crossorigin="anonymous">
+    <link rel="stylesheet" href="/app/Resources/Public/Css/style.css">
 </head>
 <body class="d-flex flex-column h-100">
 
@@ -22,8 +23,13 @@
                 Please upload your HTML template file to extract XLIFF data.
             </p>
             {$content}
-            <p class="text-muted">
-                &copy; {$smarty.now|date_format: "%Y"} | Made with ♥ by Carsten Walther | <a href="https://github.com/carsten-walther/xliff-gen" target="_blank">Visit xliff-gen on Github</a>
+
+            <hr/>
+            <p class="text-muted float-start">
+                &copy; {$smarty.now|date_format: "%Y"} | Made with ♥ by Carsten Walther
+            </p>
+            <p class="text-muted float-end">
+                <a href="https://github.com/carsten-walther/xliff-gen" target="_blank">Visit xliff-gen on Github</a>
             </p>
         </div>
     </main>
@@ -31,50 +37,7 @@
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.full.min.js" integrity="sha256-vjFnliBY8DzX9jsgU/z1/mOuQxk7erhiP0Iw35fVhTU=" crossorigin="anonymous"></script>
-
-    <script>
-        $(document).ready(function($) {
-            $('select').select2({
-                placeholder: 'Select an option'
-            });
-        });
-    </script>
-
-    <style>
-        .select2-container--default .select2-selection--multiple {
-            border-color: #ced4da;
-        }
-        .select2-container .select2-selection--multiple {
-            display: flex;
-        }
-        .select2-container .select2-search--inline .select2-search__field {
-            margin-top: 0;
-            padding: .375rem .75rem;
-        }
-
-        .select2-container--default .select2-selection--multiple .select2-selection__rendered {
-            padding: 0;
-        }
-        .select2-container--default .select2-selection--multiple .select2-selection__choice {
-            margin: 5px;
-        }
-
-        .select2-container .select2-selection--single {
-            height: auto;
-        }
-        .select2-container--default .select2-selection--single {
-            border-color: #ced4da;
-        }
-        .select2-container .select2-selection--single .select2-selection__rendered {
-            padding: .375rem .75rem;
-        }
-        .select2-container--default .select2-selection--single .select2-selection__arrow {
-            top: .375rem;
-        }
-        .select2-container--default .select2-selection--single .select2-selection__rendered {
-            line-height: inherit;
-        }
-    </style>
+    <script src="app/Resources/Public/JavaScript/app.js"></script>
 
 </body>
 </html>
