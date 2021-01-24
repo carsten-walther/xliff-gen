@@ -42,7 +42,7 @@
 			Target language
 		</label>
 		<div class="col-sm-8">
-			<select name="targetLanguages[]" id="targetLanguage" class="form-select" size="6" aria-describedby="targetLanguageHelp" multiple>
+			<select name="targetLanguages[]" id="targetLanguage" class="form-select" size="1" aria-describedby="targetLanguageHelp" multiple>
 				{if $languages}
 				{foreach $languages as $language}
 				<option value="{$language.id}">{$language.id} - {$language.title}</option>
