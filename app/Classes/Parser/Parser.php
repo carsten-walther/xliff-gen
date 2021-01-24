@@ -372,27 +372,28 @@ class Parser
                 // text
                 $objectTree[] = [
                     'type' => 'text',
-                    'content' => [
+                    'data' => [
                         'text' => $matchedVariables[1]
                     ]
                 ];
             } elseif (preg_match($regularExpression_openingViewHelperTag, $templateElement, $matchedVariables) > 0) {
                 // opening Tag
-                $objectTree[] = [
+                $tempObjectTree = [
                     'type' => 'openingTag',
-                    'content' => [
+                    'data' => [
                         'namespace' => $matchedVariables['NamespaceIdentifier'],
-                        'method' => $matchedVariables['MethodIdentifier'],
-                        'attributes' => $matchedVariables['Attributes'],
-                        'selfclosing' => $matchedVariables['Selfclosing'] !== ''
-                    ],
-                    'arguments' => $this->parseArguments($matchedVariables['Attributes'])
+                        'method' => $matchedVariables['MethodIdentifier']
+                    ]
                 ];
+                if ($matchedVariables['Attributes']) {
+                    $tempObjectTree['data']['attributes'] = $this->parseArguments($matchedVariables['Attributes']);
+                }
+                $objectTree[] = $tempObjectTree;
             } elseif (preg_match($regularExpression_closingViewHelperTag, $templateElement, $matchedVariables) > 0) {
                 // closing Tag
                 $objectTree[] = [
                     'type' => 'closingTag',
-                    'content' => [
+                    'data' => [
                         'namespace' => $matchedVariables['NamespaceIdentifier'],
                         'method' => $matchedVariables['MethodIdentifier']
                     ]
@@ -406,7 +407,7 @@ class Parser
                         // object
                         $objectTree[] = [
                             'type' => 'object',
-                            'content' => [
+                            'data' => [
                                 'object' => $matchedVariables['Object'],
                                 'delimiter' => $matchedVariables['Delimiter'],
                                 'viewhelper' => $matchedVariables['ViewHelper'] ?? '',
@@ -417,7 +418,7 @@ class Parser
                         // We only match arrays if we are INSIDE viewhelper arguments
                         $objectTree[] = [
                             'type' => 'text',
-                            'content' => [
+                            'data' => [
                                 'text' => $matchedVariables['Array']
                             ]
                         ];
@@ -425,7 +426,7 @@ class Parser
                         // text
                         $objectTree[] = [
                             'type' => 'text',
-                            'content' => [
+                            'data' => [
                                 'text' => $section
                             ]
                         ];
@@ -480,7 +481,11 @@ class Parser
             foreach ($matches as $singleMatch) {
                 $argument = $singleMatch['Argument'];
                 $value = $this->unquoteString($singleMatch['ValueQuoted']);
-                $argumentsObjectTree[$argument] = $this->buildArgumentObjectTree($value);
+                $tempObjectTree = $this->buildArgumentObjectTree($value);
+                if (sizeof($tempObjectTree) === 1) {
+                    $tempObjectTree = end($tempObjectTree);
+                }
+                $argumentsObjectTree[$argument] = $tempObjectTree;
             }
         }
         return $argumentsObjectTree;
@@ -504,7 +509,7 @@ class Parser
             // text
             return [
                 'type' => 'text',
-                'content' => [
+                'data' => [
                     'text' => $argumentString
                 ]
             ];

@@ -57,42 +57,27 @@ class Extractor
 
         $parsedObjects = $this->parser->parse($this->sourceString);
 
-        #die('<pre>' . print_r($parsedObjects, true) . '</pre>');
+        die('<pre>' . print_r($parsedObjects, true) . '</pre>');
 
         if (count($parsedObjects) > 0) {
             foreach ($parsedObjects as $parsedObject) {
+                if ($namespace !== '' && $parsedObject['data']['namespace'] === $namespace && $parsedObject['data']['method'] === $method) {
 
+                    $translationUnit = new \CarstenWalther\XliffGen\Domain\Model\TranslationUnit();
 
-                if ($namespace !== '' && $parsedObject['content']['namespace'] === $namespace) {
-                    if ($parsedObject['content']['method'] === $method) {
-
-                        $translationUnit = new \CarstenWalther\XliffGen\Domain\Model\TranslationUnit();
-
-                        #die('<pre>' . print_r($parsedObject['arguments']['default'], true) . '</pre>');
-
-                        $translationUnit->setId($parsedObject['arguments']['key']['content']['text']);
-                        $translationUnit->setResname($parsedObject['arguments']['key']['content']['text']);
-
-                        foreach ($parsedObject['arguments']['default'] as $default) {
-
-                            if (is_array($default) && array_key_exists('content', $default)) {
-                                $translationUnit->setSource($default['content']['text']);
-                                if ($this->configuration['targetLanguage']) {
-                                    $translationUnit->setTarget($default['content']['text']);
-                                }
-                                $translationUnit->setWrapWithCdata($this->shouldWrappedWithCdata($default['content']['text']));
-                                $translationUnit->setPreserveSpace($this->shouldPreserveSpace($default['content']['text'], $default['content']['text'], $this->configuration['targetLanguage']));
-                            }
-                        }
-
-                        $xlf->addTranslationUnit($translationUnit);
+                    $translationUnit->setId($parsedObject['data']['attributes']['key']['data']['text']);
+                    $translationUnit->setResname($parsedObject['data']['attributes']['key']['data']['text']);
+                    $translationUnit->setSource($parsedObject['data']['attributes']['default']['data']['text']);
+                    if ($this->configuration['targetLanguage']) {
+                        $translationUnit->setTarget($parsedObject['data']['attributes']['default']['data']['text']);
                     }
+                    $translationUnit->setWrapWithCdata($this->shouldWrappedWithCdata($parsedObject['data']['attributes']['default']['data']['text']));
+                    $translationUnit->setPreserveSpace($this->shouldPreserveSpace($parsedObject['data']['attributes']['default']['data']['text'], $parsedObject['data']['attributes']['default']['data']['text'], $this->configuration['targetLanguage']));
+
+                    $xlf->addTranslationUnit($translationUnit);
                 }
             }
         }
-
-        die('<pre>' . print_r($xlf, true) . '</pre>');
-
         return $xlf;
     }
 
