@@ -117,6 +117,15 @@ class XliffGenController
         $xlfStorage = [];
 
         if ($files) {
+
+            if (!$arguments['productName']) {
+                $arguments['productName'] = 'my_product_name';
+            }
+
+            if (!$arguments['targetLanguages']) {
+                $arguments['targetLanguages'][] = $arguments['sourceLanguage'];
+            }
+
             foreach ($arguments['targetLanguages'] as $targetLanguage) {
                 foreach ($files["error"] as $key => $error) {
 
