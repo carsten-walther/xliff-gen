@@ -2,65 +2,113 @@
 	<div class="hide">
 		<input type="hidden" name="MAX_FILE_SIZE" value="65536">
 	</div>
-	<div class="row mb-4">
-		<label for="productName" class="col-sm-2 col-form-label">
-			Product name&nbsp;*
-		</label>
-		<div class="col-sm-8">
-			<input type="text" name="productName" id="productName" placeholder="Product name" class="form-control" aria-describedby="productNameHelp" required>
-			<div id="productNameHelp" class="form-text">The product name is usually the name of out extension, e.g. my_extension.</div>
-		</div>
-	</div>
-	<div class="row mb-4">
-		<label for="sourceLanguage" class="col-sm-2 col-form-label">
-			Source language&nbsp;*
-		</label>
-		<div class="col-sm-8">
-			<select name="sourceLanguage" id="sourceLanguage" class="form-select" aria-describedby="sourceLanguageHelp" required>
-				{if $languages}
-				{foreach $languages as $language}
-				<option value="{$language.id}" {if $language.id == 'en'}selected{/if}>{$language.id} - {$language.title}</option>
-				{/foreach}
-				{/if}
-			</select>
-			<div id="sourceLanguageHelp" class="form-text">The source language is usually the default language, mostly it is "en".</div>
-		</div>
-	</div>
-	<div class="row mb-4">
-		<div class="offset-sm-2 col-sm-8">
-			<div class="form-check">
-				<input type="checkbox" name="addSourceLanguageToTargetLanguage" id="addSourceLanguageToTargetLanguage" class="form-check-input" aria-describedby="addSourceLanguageToTargetLanguageHelp" checked>
-				<label class="form-check-label" for="addSourceLanguageToTargetLanguage">
-					also generate the source language
-				</label>
-				<div id="addSourceLanguageToTargetLanguageHelp" class="form-text">Active this checkbox to generate also the source language.</div>
+	<fieldset>
+		<legend>General</legend>
+		<div class="row mb-4">
+			<label for="productName" class="col-sm-2 col-form-label">
+				Product name&nbsp;*
+			</label>
+			<div class="col-sm-8">
+				<input type="text" name="productName" id="productName" placeholder="Product name" class="form-control" aria-describedby="productNameHelp" required>
+				<div id="productNameHelp" class="form-text">The product name is usually the name of out extension, e.g. my_extension.</div>
 			</div>
 		</div>
-	</div>
-	<div class="row mb-4">
-		<label for="targetLanguage" class="col-sm-2 col-form-label">
-			Target language
-		</label>
-		<div class="col-sm-8">
-			<select name="targetLanguages[]" id="targetLanguage" class="form-select" size="1" aria-describedby="targetLanguageHelp" multiple>
-				{if $languages}
-				{foreach $languages as $language}
-				<option value="{$language.id}">{$language.id} - {$language.title}</option>
-				{/foreach}
-				{/if}
-			</select>
-			<div id="targetLanguageHelp" class="form-text">Please select the target languages you want to generate the xliff xml files.</div>
+		<div class="row mb-4">
+			<label for="description" class="col-sm-2 col-form-label">
+				Description
+			</label>
+			<div class="col-sm-8">
+				<textarea name="description" id="description" placeholder="Product name" class="form-control" aria-describedby="descriptionHelp"></textarea>
+				<div id="descriptionHelp" class="form-text">Enter a short description for your product, if needed.</div>
+			</div>
 		</div>
-	</div>
-	<div class="row mb-4">
-		<label for="files" class="col-sm-2 col-form-label">
-			Template files&nbsp;*
-		</label>
-		<div class="col-sm-8">
-			<input type="file" name="files[]" id="files" accept="text/html" class="form-control" aria-describedby="fileHelp" multiple required>
-			<div id="fileHelp" class="form-text">Select one or more html template files. These files will be scanned for f:translate view helpers. The contained keys and the default values will be used for xliff generation.</div>
+		<div class="row mb-4">
+			<label for="authorName" class="col-sm-2 col-form-label">
+				Author name
+			</label>
+			<div class="col-sm-8">
+				<input type="text" name="authorName" id="authorName" placeholder="John Doe" class="form-control" aria-describedby="authorNameHelp">
+				<div id="authorNameHelp" class="form-text">Enter the author name, if needed.</div>
+			</div>
 		</div>
-	</div>
+		<div class="row mb-4">
+			<label for="authorEmail" class="col-sm-2 col-form-label">
+				Author email address
+			</label>
+			<div class="col-sm-8">
+				<input type="email" name="authorEmail" id="authorEmail" placeholder="john.doe@example.org" class="form-control" aria-describedby="authorEmailHelp">
+				<div id="authorEmailHelp" class="form-text">Enter the author email address, if needed.</div>
+			</div>
+		</div>
+	</fieldset>
+	<fieldset>
+		<legend>Settings</legend>
+		<div class="row mb-4">
+			<label for="type" class="col-sm-2 col-form-label">
+				Type
+			</label>
+			<div class="col-sm-8">
+				<select name="type" id="type" class="form-select" aria-describedby="typeHelp" required>
+					{if $types}
+					{foreach $types as $type}
+					<option value="{$type.id}">{$type.title}</option>
+					{/foreach}
+					{/if}
+				</select>
+				<div id="typeHelp" class="form-text">Select the type of your product, usually "module".</div>
+			</div>
+		</div>
+		<div class="row mb-4">
+			<label for="sourceLanguage" class="col-sm-2 col-form-label">
+				Source language&nbsp;*
+			</label>
+			<div class="col-sm-8">
+				<select name="sourceLanguage" id="sourceLanguage" class="form-select" aria-describedby="sourceLanguageHelp" required>
+					{if $languages}
+					{foreach $languages as $language}
+					<option value="{$language.id}" {if $language.id == 'en'}selected{/if}>{$language.id} - {$language.title}</option>
+					{/foreach}
+					{/if}
+				</select>
+				<div id="sourceLanguageHelp" class="form-text">The source language is usually the default language, mostly it is "en".</div>
+			</div>
+		</div>
+		<div class="row mb-4">
+			<div class="offset-sm-2 col-sm-8">
+				<div class="form-check">
+					<input type="checkbox" name="addSourceLanguageToTargetLanguage" id="addSourceLanguageToTargetLanguage" class="form-check-input" aria-describedby="addSourceLanguageToTargetLanguageHelp" checked>
+					<label class="form-check-label" for="addSourceLanguageToTargetLanguage">
+						also generate the source language
+					</label>
+					<div id="addSourceLanguageToTargetLanguageHelp" class="form-text">Active this checkbox to generate also the source language.</div>
+				</div>
+			</div>
+		</div>
+		<div class="row mb-4">
+			<label for="targetLanguage" class="col-sm-2 col-form-label">
+				Target language
+			</label>
+			<div class="col-sm-8">
+				<select name="targetLanguages[]" id="targetLanguage" class="form-select" size="1" aria-describedby="targetLanguageHelp" multiple>
+					{if $languages}
+					{foreach $languages as $language}
+					<option value="{$language.id}">{$language.id} - {$language.title}</option>
+					{/foreach}
+					{/if}
+				</select>
+				<div id="targetLanguageHelp" class="form-text">Please select the target languages you want to generate the xliff xml files.</div>
+			</div>
+		</div>
+		<div class="row mb-4">
+			<label for="files" class="col-sm-2 col-form-label">
+				Template files&nbsp;*
+			</label>
+			<div class="col-sm-8">
+				<input type="file" name="files[]" id="files" accept="text/html" class="form-control" aria-describedby="fileHelp" multiple required>
+				<div id="fileHelp" class="form-text">Select one or more html template files. These files will be scanned for f:translate view helpers. The contained keys and the default values will be used for xliff generation.</div>
+			</div>
+		</div>
+	</fieldset>
 	<div class="row mb-4">
 		<div class="offset-sm-2 col-sm-8">
 			<p class="small">Fields marked with (*) are required.</p>

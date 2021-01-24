@@ -29,11 +29,26 @@ class TranslationUnit
     protected $target;
 
     /**
+     * @var bool
+     */
+    protected $preserveSpace;
+
+    /**
+     * @var bool
+     */
+    protected $wrapWithCdata;
+
+    /**
+     * @var array<\CarstenWalther\XliffGen\Domain\Model\AlternativeTranslation>
+     */
+    protected $alternativeTranslations;
+
+    /**
      * TranslationUnit constructor.
      */
     public function __construct()
     {
-
+        $this->alternativeTranslations = [];
     }
 
     /**
@@ -41,11 +56,20 @@ class TranslationUnit
      */
     public function toArray() : array
     {
+        $alternativeTranslations = [];
+
+        foreach ($this->getAlternativeTranslations() as $alternativeTranslation) {
+            $alternativeTranslations[] = $alternativeTranslation->toArray();
+        }
+
         return [
             'id' => $this->getId(),
             'resname' => $this->getResname(),
             'source' => $this->getSource(),
-            'target' => $this->getTarget()
+            'target' => $this->getTarget(),
+            'preserveSpace' => $this->getPreserveSpace(),
+            'wrapWithCdata' => $this->getWrapWithCdata(),
+            'alternativeTranslations' => $alternativeTranslations
         ];
     }
 
@@ -122,6 +146,74 @@ class TranslationUnit
     public function setTarget(string $target = null) :? TranslationUnit
     {
         $this->target = $target;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getPreserveSpace() : bool
+    {
+        return $this->preserveSpace;
+    }
+
+    /**
+     * @param bool $preserveSpace
+     *
+     * @return TranslationUnit
+     */
+    public function setPreserveSpace(bool $preserveSpace) : TranslationUnit
+    {
+        $this->preserveSpace = $preserveSpace;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getWrapWithCdata() : bool
+    {
+        return $this->wrapWithCdata;
+    }
+
+    /**
+     * @param bool $wrapWithCdata
+     *
+     * @return TranslationUnit
+     */
+    public function setWrapWithCdata(bool $wrapWithCdata) : TranslationUnit
+    {
+        $this->wrapWithCdata = $wrapWithCdata;
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getAlternativeTranslations() : array
+    {
+        return $this->alternativeTranslations;
+    }
+
+    /**
+     * @param array $alternativeTranslations
+     *
+     * @return TranslationUnit
+     */
+    public function setAlternativeTranslations(array $alternativeTranslations) : TranslationUnit
+    {
+        $this->alternativeTranslations = $alternativeTranslations;
+        return $this;
+    }
+
+    /**
+     * @param \CarstenWalther\XliffGen\Domain\Model\AlternativeTranslation $alternativeTranslation
+     *
+     * @return $this
+     */
+    public function addAlternative(\CarstenWalther\XliffGen\Domain\Model\AlternativeTranslation $alternativeTranslation) : Xlf
+    {
+        $this->alternativeTranslations[] = $alternativeTranslation;
         return $this;
     }
 }

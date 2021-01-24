@@ -30,8 +30,6 @@ class Generator
      *
      * @param \CarstenWalther\XliffGen\Domain\Model\Xlf|null $xlf
      * @param string                                         $basePath
-     *
-     * @throws \SmartyException
      */
     public function __construct(\CarstenWalther\XliffGen\Domain\Model\Xlf $xlf = null, string $basePath)
     {

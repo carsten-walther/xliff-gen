@@ -40,6 +40,26 @@ class Xlf
     protected $translationUnits;
 
     /**
+     * @var string
+     */
+    protected $description;
+
+    /**
+     * @var string
+     */
+    protected $type;
+
+    /**
+     * @var string
+     */
+    protected $authorName;
+
+    /**
+     * @var string
+     */
+    protected $authorEmail;
+
+    /**
      * Xlf constructor.
      */
     public function __construct()
@@ -65,7 +85,11 @@ class Xlf
             'original' => $this->getOriginal(),
             'date' => $this->getDate(),
             'productName' => $this->getProductName(),
-            'translationUnits' => $translationUnits
+            'translationUnits' => $translationUnits,
+            'description' => $this->getDescription(),
+            'type' => $this->getType(),
+            'authorName' => $this->getAuthorName(),
+            'authorEmail' => $this->getAuthorEmail()
         ];
     }
 
@@ -190,7 +214,83 @@ class Xlf
      */
     public function addTranslationUnit(\CarstenWalther\XliffGen\Domain\Model\TranslationUnit $translationUnit) : Xlf
     {
-        array_push($this->translationUnits, $translationUnit);
+        $this->translationUnits[] = $translationUnit;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDescription() : string
+    {
+        return $this->description;
+    }
+
+    /**
+     * @param string $description
+     *
+     * @return Xlf
+     */
+    public function setDescription(string $description) : Xlf
+    {
+        $this->description = $description;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getType() : string
+    {
+        return $this->type;
+    }
+
+    /**
+     * @param string $type
+     *
+     * @return Xlf
+     */
+    public function setType(string $type) : Xlf
+    {
+        $this->type = $type;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getAuthorName() : string
+    {
+        return $this->authorName;
+    }
+
+    /**
+     * @param string $authorName
+     *
+     * @return Xlf
+     */
+    public function setAuthorName(string $authorName) : Xlf
+    {
+        $this->authorName = $authorName;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getAuthorEmail() : string
+    {
+        return $this->authorEmail;
+    }
+
+    /**
+     * @param string $authorEmail
+     *
+     * @return Xlf
+     */
+    public function setAuthorEmail(string $authorEmail) : Xlf
+    {
+        $this->authorEmail = $authorEmail;
         return $this;
     }
 }
