@@ -18,7 +18,7 @@ Date: January, 18th 2021
 Download this repository. Make shure you have installed composer. Unzip the package e.g. to `/var/www/xliff-gen/` an run
 
 ```bash
-$ composer install
+composer install
 ```
 
 Done.
@@ -28,9 +28,9 @@ Done.
 If everything is done you can run this locally via the build in php webserver. You have to call
 
 ```bash
-$ php -S localhost:8000
+php -S localhost:8000
 ```
 
 ## How to use
 
-...
+Open your browser and put localhost:8000 into the address bar and hit enter. Now generate your xliff files.
