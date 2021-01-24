@@ -2,16 +2,16 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, shrink-to-fit=no">
     <title>{$title}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
 </head>
 <body class="d-flex flex-column h-100">
 
-    <main class="flex-shrink-0 m-5">
+    <main class="flex-shrink-0 m-2 m-sm-3 m-md-5">
         <div class="container-fluid">
             <p class="lead mb-0">
-                Carsten Walther's
+                General
             </p>
             <h1>
                 XLIFF Generator
@@ -20,13 +20,10 @@
             <p class="lead">
                 Please upload your HTML template file to extract XLIFF data.
             </p>
-
             {$content}
-
             <p class="text-muted">
                 &copy; {$smarty.now|date_format: "%Y"} | Made with ♥ by Carsten Walther
             </p>
-
         </div>
     </main>
 
