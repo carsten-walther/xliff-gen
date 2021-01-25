@@ -57,17 +57,20 @@ class Extractor
 
         $parsedObjects = $this->parser->parse($this->sourceString);
 
-        die('<pre>' . print_r($parsedObjects, true) . '</pre>');
-
         if (count($parsedObjects) > 0) {
             foreach ($parsedObjects as $parsedObject) {
                 if ($namespace !== '' && $parsedObject['data']['namespace'] === $namespace && $parsedObject['data']['method'] === $method) {
 
                     $translationUnit = new \CarstenWalther\XliffGen\Domain\Model\TranslationUnit();
 
+                    Debug::var_dump($parsedObject);
+                    die();
+
                     $translationUnit->setId($parsedObject['data']['attributes']['key']['data']['text']);
                     $translationUnit->setResname($parsedObject['data']['attributes']['key']['data']['text']);
+
                     $translationUnit->setSource($parsedObject['data']['attributes']['default']['data']['text']);
+
                     if ($this->configuration['targetLanguage']) {
                         $translationUnit->setTarget($parsedObject['data']['attributes']['default']['data']['text']);
                     }

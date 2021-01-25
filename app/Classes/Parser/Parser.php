@@ -2,6 +2,8 @@
 
 namespace CarstenWalther\XliffGen\Parser;
 
+use CarstenWalther\XliffGen\Utility\Debug;
+
 /**
  * Class Parser
  *
@@ -251,9 +253,14 @@ class Parser
      *
      * @var array
      */
-    protected $namespaces = array(
+    protected $namespaces = [
         'f' => 'TYPO3\Fluid\ViewHelpers'
-    );
+    ];
+
+    /**
+     * @var array
+     */
+    protected $stack = [];
 
     /**
      * Parses a given template string and returns a parsed template object.
@@ -288,9 +295,9 @@ class Parser
      */
     protected function reset() : void
     {
-        $this->namespaces = array(
+        $this->namespaces = [
             'f' => 'TYPO3\Fluid\ViewHelpers'
-        );
+        ];
     }
 
     /**
@@ -357,7 +364,7 @@ class Parser
      * @param array   $splitTemplate The split template, so that every tag with a namespace declaration is already a seperate array element.
      * @param integer $context       one of the CONTEXT_* constants, defining whether we are inside or outside of ViewHelper arguments currently.
      *
-     * @return mixed
+     * @return array
      * @throws \Exception
      */
     protected function buildObjectTree(array $splitTemplate, int $context) : array
@@ -365,76 +372,20 @@ class Parser
         $regularExpression_openingViewHelperTag = $this->prepareTemplateRegularExpression(self::$SCAN_PATTERN_TEMPLATE_VIEWHELPERTAG);
         $regularExpression_closingViewHelperTag = $this->prepareTemplateRegularExpression(self::$SCAN_PATTERN_TEMPLATE_CLOSINGVIEWHELPERTAG);
 
-        $objectTree = [];
         foreach ($splitTemplate as $templateElement) {
             $matchedVariables = [];
             if (preg_match(self::$SCAN_PATTERN_CDATA, $templateElement, $matchedVariables) > 0) {
-                // text
-                $objectTree[] = [
-                    'type' => 'text',
-                    'data' => [
-                        'text' => $matchedVariables[1]
-                    ]
-                ];
+                $this->textHandler($matchedVariables[1]);
             } elseif (preg_match($regularExpression_openingViewHelperTag, $templateElement, $matchedVariables) > 0) {
-                // opening Tag
-                $tempObjectTree = [
-                    'type' => 'openingTag',
-                    'data' => [
-                        'namespace' => $matchedVariables['NamespaceIdentifier'],
-                        'method' => $matchedVariables['MethodIdentifier']
-                    ]
-                ];
-                if ($matchedVariables['Attributes']) {
-                    $tempObjectTree['data']['attributes'] = $this->parseArguments($matchedVariables['Attributes']);
-                }
-                $objectTree[] = $tempObjectTree;
+                $this->openingViewHelperTagHandler($matchedVariables['NamespaceIdentifier'], $matchedVariables['MethodIdentifier'], $matchedVariables['Attributes'], ($matchedVariables['Selfclosing'] !== ''));
             } elseif (preg_match($regularExpression_closingViewHelperTag, $templateElement, $matchedVariables) > 0) {
-                // closing Tag
-                $objectTree[] = [
-                    'type' => 'closingTag',
-                    'data' => [
-                        'namespace' => $matchedVariables['NamespaceIdentifier'],
-                        'method' => $matchedVariables['MethodIdentifier']
-                    ]
-                ];
+                $this->closingViewHelperTagHandler($matchedVariables['NamespaceIdentifier'], $matchedVariables['MethodIdentifier']);
             } else {
-                // text and shorthand
-                $sections = preg_split($this->prepareTemplateRegularExpression(self::$SPLIT_PATTERN_SHORTHANDSYNTAX), $templateElement, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
-                foreach ($sections as $section) {
-                    $matchedVariables = [];
-                    if (preg_match(self::$SCAN_PATTERN_SHORTHANDSYNTAX_OBJECTACCESSORS, $section, $matchedVariables) > 0) {
-                        // object
-                        $objectTree[] = [
-                            'type' => 'object',
-                            'data' => [
-                                'object' => $matchedVariables['Object'],
-                                'delimiter' => $matchedVariables['Delimiter'],
-                                'viewhelper' => $matchedVariables['ViewHelper'] ?? '',
-                                'additionalViewhelper' => $matchedVariables['AdditionalViewHelpers'] ?? ''
-                            ]
-                        ];
-                    } elseif ($context === self::CONTEXT_INSIDE_VIEWHELPER_ARGUMENTS && preg_match(self::$SCAN_PATTERN_SHORTHANDSYNTAX_ARRAYS, $section, $matchedVariables) > 0) {
-                        // We only match arrays if we are INSIDE viewhelper arguments
-                        $objectTree[] = [
-                            'type' => 'text',
-                            'data' => [
-                                'text' => $matchedVariables['Array']
-                            ]
-                        ];
-                    } else {
-                        // text
-                        $objectTree[] = [
-                            'type' => 'text',
-                            'data' => [
-                                'text' => $section
-                            ]
-                        ];
-                    }
-                }
+                $this->textAndShorthandSyntaxHandler($templateElement, $context);
             }
         }
-        return $objectTree;
+
+        return $this->stack;
     }
 
     /**
@@ -481,11 +432,7 @@ class Parser
             foreach ($matches as $singleMatch) {
                 $argument = $singleMatch['Argument'];
                 $value = $this->unquoteString($singleMatch['ValueQuoted']);
-                $tempObjectTree = $this->buildArgumentObjectTree($value);
-                if (sizeof($tempObjectTree) === 1) {
-                    $tempObjectTree = end($tempObjectTree);
-                }
-                $argumentsObjectTree[$argument] = $tempObjectTree;
+                $argumentsObjectTree[$argument] = $this->buildArgumentObjectTree($value);
             }
         }
         return $argumentsObjectTree;
@@ -515,7 +462,10 @@ class Parser
             ];
         }
         $splitArgument = $this->splitTemplateAtDynamicTags($argumentString);
-        return $this->buildObjectTree($splitArgument, self::CONTEXT_INSIDE_VIEWHELPER_ARGUMENTS);
+        Debug::var_dump($this->buildObjectTree($splitArgument, self::CONTEXT_INSIDE_VIEWHELPER_ARGUMENTS));
+        die();
+        #return $this->buildObjectTree($splitArgument, self::CONTEXT_INSIDE_VIEWHELPER_ARGUMENTS);
+        return [];
     }
 
     /**
@@ -530,5 +480,233 @@ class Parser
     protected function prepareTemplateRegularExpression(string $regularExpression) : string
     {
         return str_replace('NAMESPACE', implode('|', array_keys($this->namespaces)), $regularExpression);
+    }
+
+    /**
+     * Text node handler
+     *
+     * @param string $text
+     *
+     * @return void
+     */
+    protected function textHandler(string $text) : void
+    {
+        $this->stack[] = [
+            'type' => 'text',
+            'data' => [
+                'text' => $text
+            ]
+        ];
+    }
+
+    /**
+     * Handles an opening or self-closing view helper tag.
+     *
+     * @param string  $namespaceIdentifier Namespace identifier - being looked up in $this->namespaces
+     * @param string  $methodIdentifier    Method identifier
+     * @param string  $arguments           Arguments string, not yet parsed
+     * @param boolean $selfclosing         true, if the tag is a self-closing tag.
+     *
+     * @return void
+     * @throws \Exception
+     */
+    protected function openingViewHelperTagHandler(string $namespaceIdentifier, string $methodIdentifier, string $arguments, bool $selfclosing) : void
+    {
+        $argumentsObjectTree = $this->parseArguments($arguments);
+        $this->initializeViewHelperAndAddItToStack($namespaceIdentifier, $methodIdentifier, $argumentsObjectTree);
+    }
+
+    /**
+     * Handles a closing view helper tag
+     *
+     * @param string $namespaceIdentifier Namespace identifier for the closing tag.
+     * @param string $methodIdentifier    Method identifier.
+     *
+     * @return void
+     * @throws \Exception
+     */
+    protected function closingViewHelperTagHandler(string $namespaceIdentifier, string $methodIdentifier) : void
+    {
+        if (!array_key_exists($namespaceIdentifier, $this->namespaces)) {
+            throw new \Exception('Namespace could not be resolved. This exception should never be thrown!');
+        }
+
+        $this->stack[] =  [
+            'type' => 'closingTag',
+            'data' => [
+                'namespace' => $namespaceIdentifier,
+                'method' => $methodIdentifier
+            ]
+        ];
+    }
+
+    /**
+     * Handler for everything which is not a ViewHelperNode.
+     *
+     * This includes Text, array syntax, and object accessor syntax.
+     *
+     * @param string  $text    Text to process
+     * @param integer $context one of the CONTEXT_* constants, defining whether we are inside or outside of ViewHelper arguments currently.
+     *
+     * @return void
+     * @throws \Exception
+     */
+    protected function textAndShorthandSyntaxHandler(string $text, int $context) : void
+    {
+        $sections = preg_split($this->prepareTemplateRegularExpression(self::$SPLIT_PATTERN_SHORTHANDSYNTAX), $text, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+        foreach ($sections as $section) {
+            $matchedVariables = [];
+            if (preg_match(self::$SCAN_PATTERN_SHORTHANDSYNTAX_OBJECTACCESSORS, $section, $matchedVariables) > 0) {
+                $this->objectAccessorHandler($matchedVariables['Object'], $matchedVariables['Delimiter'], ($matchedVariables['ViewHelper'] ?? ''), ($matchedVariables['AdditionalViewHelpers'] ?? ''));
+            } elseif ($context === self::CONTEXT_INSIDE_VIEWHELPER_ARGUMENTS && preg_match(self::$SCAN_PATTERN_SHORTHANDSYNTAX_ARRAYS, $section, $matchedVariables) > 0) {
+                // We only match arrays if we are INSIDE viewhelper arguments
+                $this->arrayHandler($matchedVariables['Array']);
+            } else {
+                $this->textHandler($section);
+            }
+        }
+    }
+
+    /**
+     * Handler for array syntax. This creates the array object recursively and
+     * adds it to the current node.
+     *
+     * @param string $arrayText The array as string.
+     *
+     * @return void
+     * @throws \Exception
+     */
+    protected function arrayHandler(string $arrayText) : void
+    {
+        $this->stack[] =  [
+            'type' => 'array',
+            'data' => $this->recursiveArrayHandler($arrayText)
+        ];
+    }
+
+    /**
+     * Handles the appearance of an object accessor (like {posts.author.email}).
+     *
+     * Handles ViewHelpers as well which are in the shorthand syntax.
+     *
+     * @param string $objectAccessorString String which identifies which objects to fetch
+     * @param string $delimiter
+     * @param string $viewHelperString
+     * @param string $additionalViewHelpersString
+     *
+     * @return void
+     * @throws \Exception
+     */
+    protected function objectAccessorHandler(string $objectAccessorString, string $delimiter, string $viewHelperString, string $additionalViewHelpersString) : void
+    {
+        $viewHelperString .= $additionalViewHelpersString;
+
+        // The following post-processing handles a case when there is only a ViewHelper, and no Object Accessor.
+        if ($delimiter === '' && $viewHelperString !== '') {
+            $viewHelperString = $objectAccessorString . $viewHelperString;
+        }
+
+        // ViewHelpers
+        $matches = [];
+        if ($viewHelperString !== '' && preg_match_all(self::$SPLIT_PATTERN_SHORTHANDSYNTAX_VIEWHELPER, $viewHelperString, $matches, PREG_SET_ORDER) > 0) {
+            // The last ViewHelper has to be added first for correct chaining.
+            foreach (array_reverse($matches) as $singleMatch) {
+                if ($singleMatch['ViewHelperArguments'] !== '') {
+                    $arguments = $this->postProcessArgumentsForObjectAccessor($this->recursiveArrayHandler($singleMatch['ViewHelperArguments']));
+                } else {
+                    $arguments = [];
+                }
+                $this->initializeViewHelperAndAddItToStack($singleMatch['NamespaceIdentifier'], $singleMatch['MethodIdentifier'], $arguments);
+            }
+        }
+    }
+
+    /**
+     * Initialize the given ViewHelper and adds it to the current node and to
+     * the stack.
+     *
+     * @param string $namespaceIdentifier Namespace identifier - being looked up in $this->namespaces
+     * @param string $methodIdentifier    Method identifier
+     * @param array  $argumentsObjectTree Arguments object tree
+     *
+     * @return void
+     * @throws \Exception
+     */
+    protected function initializeViewHelperAndAddItToStack(string $namespaceIdentifier, string $methodIdentifier, array $argumentsObjectTree) : void
+    {
+        if (!array_key_exists($namespaceIdentifier, $this->namespaces)) {
+            throw new \Exception('Namespace could not be resolved. This exception should never be thrown!', 1224254792);
+        }
+
+        $tmpStack = [
+            'type' => 'openingTag',
+            'data' => [
+                'namespace' => $namespaceIdentifier,
+                'method' => $methodIdentifier
+            ]
+        ];
+
+        if ($argumentsObjectTree) {
+            $tmpStack['data']['attributes'] = $argumentsObjectTree;
+        }
+
+        $this->stack[] = $tmpStack;
+    }
+
+    /**
+     * Recursive function which takes the string representation of an array and
+     * builds an object tree from it.
+     *
+     * Deals with the following value types:
+     * - Numbers (Integers and Floats)
+     * - Strings
+     * - Variables
+     * - sub-arrays
+     *
+     * @param string $arrayText Array text
+     *
+     * @return array the array node built up
+     * @throws \Exception
+     */
+    protected function recursiveArrayHandler(string $arrayText) : array
+    {
+        $matches = [];
+        if (preg_match_all(self::$SPLIT_PATTERN_SHORTHANDSYNTAX_ARRAY_PARTS, $arrayText, $matches, PREG_SET_ORDER) > 0) {
+            $arrayToBuild = [];
+            foreach ($matches as $singleMatch) {
+                $arrayKey = $singleMatch['Key'];
+                if (!empty($singleMatch['VariableIdentifier'])) {
+                    $arrayToBuild[$arrayKey] = $singleMatch['VariableIdentifier'];
+                } elseif (array_key_exists('Number', $singleMatch) && (!empty($singleMatch['Number']) || $singleMatch['Number'] === '0')) {
+                    $arrayToBuild[$arrayKey] = (float)$singleMatch['Number'];
+                } elseif ((array_key_exists('QuotedString', $singleMatch) && !empty($singleMatch['QuotedString']))) {
+                    $argumentString = $this->unquoteString($singleMatch['QuotedString']);
+                    $arrayToBuild[$arrayKey] = $this->buildArgumentObjectTree($argumentString);
+                } elseif (array_key_exists('Subarray', $singleMatch) && !empty($singleMatch['Subarray'])) {
+                    $arrayToBuild[$arrayKey] = $this->recursiveArrayHandler($singleMatch['Subarray']);
+                } else {
+                    throw new \Exception('This exception should never be thrown, as the array value has to be of some type (Value given: "' . var_export($singleMatch, true) . '"). Please post your template to the bugtracker at forge.typo3.org.');
+                }
+            }
+            return $arrayToBuild;
+        }
+        throw new \Exception('This exception should never be thrown, there is most likely some error in the regular expressions. Please post your template to the bugtracker at forge.typo3.org.');
+    }
+
+    /**
+     * Post process the arguments for the ViewHelpers in the object accessor
+     * syntax. We need to convert an array into an array of (only) nodes
+     *
+     * @param array $arguments The arguments to be processed
+     * @return array the processed array
+     */
+    protected function postProcessArgumentsForObjectAccessor(array $arguments) : array
+    {
+        foreach ($arguments as $argumentName => $argumentValue) {
+            if (isset($argumentValue['data']['text'])) {
+                $arguments[$argumentName] = (string)$argumentValue['data']['text'];
+            }
+        }
+        return $arguments;
     }
 }

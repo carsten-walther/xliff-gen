@@ -11,6 +11,7 @@
     ],
     "require": {
         "php": "~7.3",
+        "ext-ctype": "*",
         "smarty/smarty": "~3.1"
     },
     "autoload": {
