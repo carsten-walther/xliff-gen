@@ -55,8 +55,14 @@ class Extractor
         $xlf->setProductName($this->configuration['productName'] ? : null);
         $xlf->setDate(new \DateTime());
 
-        $parsedObjects = $this->parser->parse($this->sourceString);
+        /** @var \CarstenWalther\XliffGen\Parser\ParsingState $parsingState */
+        $parsingState = $this->parser->parse($this->sourceString);
 
+        Debug::var_dump($parsingState->getViewHelpersOfType('TYPO3\\Fluid\\ViewHelpers\\TranslateViewHelper'));
+
+        die();
+
+        /*
         if (count($parsedObjects) > 0) {
             foreach ($parsedObjects as $parsedObject) {
                 if ($namespace !== '' && $parsedObject['data']['namespace'] === $namespace && $parsedObject['data']['method'] === $method) {
@@ -81,6 +87,8 @@ class Extractor
                 }
             }
         }
+        */
+
         return $xlf;
     }
 
