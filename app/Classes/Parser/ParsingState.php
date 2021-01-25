@@ -2,6 +2,8 @@
 
 namespace CarstenWalther\XliffGen\Parser;
 
+use CarstenWalther\XliffGen\Utility\Debug;
+
 /**
  * Class ParsingState
  *
@@ -96,20 +98,22 @@ class ParsingState
     /**
      * @param string $type
      */
-    public function getViewHelpersOfType(string $type, $nodesOfType = [])
+    public function getViewHelpersOfType(string $type)
     {
         if (count($this->getRootNode()->getChildNodes()) > 0) {
             foreach ($this->getRootNode()->getChildNodes() as $childNode) {
                 if ($childNode && $childNode instanceof \CarstenWalther\XliffGen\Parser\SyntaxTree\ViewHelperNode) {
                     if ($childNode->getViewHelperClassName() === $type) {
                         $this->nodesOfType[] = $childNode;
-                        if (count($childNode->getChildNodes()) > 0) {
-                            $this->getViewHelpersOfType($type, $this->nodesOfType);
-                        }
+                    } else {
+                        Debug::var_dump($childNode);
                     }
                 }
             }
         }
+
+        Debug::var_dump($this->nodesOfType);
+
         return $this->nodesOfType;
     }
 }
