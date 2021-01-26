@@ -59,23 +59,30 @@ class Extractor
         $parsingState = $this->parser->parse($this->sourceString);
 
         $viewHelperName = $this->parser->resolveViewHelperName($namespace, $method);
-        $nodes = $parsingState->fetchNodesByViewHelperName($viewHelperName, $parsingState->getRootNode());
+        $nodes = $parsingState->getNodesByViewHelperName($viewHelperName, $parsingState->getRootNode());
+
+        #Debug::var_dump($nodes);
+        die();
 
         if ($nodes) {
             foreach ($nodes as $node) {
                 /** @var \CarstenWalther\XliffGen\Parser\SyntaxTree\NodeInterface $node */
                 $nodeArguments = $node->getArguments();
 
-                Debug::var_dump($nodeArguments);
-
                 $key = $resname = $nodeArguments['key']->getText();
-                $source = $nodeArguments['default']->getText();
-                $target = $this->configuration['targetLanguage'] ? $source : '';
+
+                $source = $key;
+                $target = '';
 
                 $translationUnit = new \CarstenWalther\XliffGen\Domain\Model\TranslationUnit();
-
                 $translationUnit->setId($key);
                 $translationUnit->setResname($resname);
+
+                if ($nodeArguments['default'] instanceof \CarstenWalther\XliffGen\Parser\SyntaxTree\TextNode) {
+                    $source = $nodeArguments['default']->getText();
+                    $target = $this->configuration['targetLanguage'] ? $source : '';
+                }
+
                 $translationUnit->setSource($source);
                 $translationUnit->setTarget($target);
                 $translationUnit->setWrapWithCdata($this->shouldWrappedWithCdata($source));
@@ -83,10 +90,8 @@ class Extractor
 
                 $xlf->addTranslationUnit($translationUnit);
             }
-            die();
         }
 
-        Debug::var_dump($xlf);
         die();
 
         return $xlf;

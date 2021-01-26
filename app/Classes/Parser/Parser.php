@@ -3,12 +3,10 @@
 namespace CarstenWalther\XliffGen\Parser;
 
 use CarstenWalther\XliffGen\Parser\SyntaxTree\ArrayNode;
-use CarstenWalther\XliffGen\Parser\SyntaxTree\BooleanNode;
 use CarstenWalther\XliffGen\Parser\SyntaxTree\ObjectAccessorNode;
 use CarstenWalther\XliffGen\Parser\SyntaxTree\RootNode;
 use CarstenWalther\XliffGen\Parser\SyntaxTree\TextNode;
 use CarstenWalther\XliffGen\Parser\SyntaxTree\ViewHelperNode;
-use CarstenWalther\XliffGen\Utility\Debug;
 
 /**
  * Class Parser
@@ -749,7 +747,7 @@ class Parser
     protected function postProcessArgumentsForObjectAccessor(array $arguments) : array
     {
         foreach ($arguments as $argumentName => $argumentValue) {
-            if (isset($argumentValue['data']['text'])) {
+            if (!is_object($argumentValue) && isset($argumentValue['data']['text'])) {
                 $arguments[$argumentName] = (string)$argumentValue['data']['text'];
             }
         }

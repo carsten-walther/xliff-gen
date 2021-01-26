@@ -95,7 +95,7 @@ class ParsingState
      *
      * @return mixed
      */
-    public function fetchNodesByViewHelperName(string $type, \CarstenWalther\XliffGen\Parser\SyntaxTree\AbstractNode $node, array &$nodes = []) : array
+    public function getNodesByViewHelperName(string $type, \CarstenWalther\XliffGen\Parser\SyntaxTree\AbstractNode $node, array &$nodes = []) : array
     {
         if ($node->hasChildNodes()) {
             foreach ($node->getChildNodes() as $childNode) {
@@ -103,7 +103,10 @@ class ParsingState
                     if ($childNode->getViewHelperClassName() === $type) {
                         $nodes[] = $childNode;
                     } else {
-                        $this->fetchNodesByViewHelperName($type, $childNode, $nodes);
+
+                        Debug::var_dump($childNode);
+
+                        #$this->getNodesByViewHelperName($type, $childNode, $nodes);
                     }
                 }
             }
