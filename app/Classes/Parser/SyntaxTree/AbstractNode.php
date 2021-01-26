@@ -27,6 +27,16 @@ class AbstractNode implements \CarstenWalther\XliffGen\Parser\SyntaxTree\NodeInt
     }
 
     /**
+     * If child nodes given return true.
+     *
+     * @return bool
+     */
+    public function hasChildNodes() : bool
+    {
+        return count($this->childNodes) > 0;
+    }
+
+    /**
      * Appends a sub node to this node. Is used inside the parser to append children
      *
      * @param NodeInterface $childNode The sub node to add

@@ -26,13 +26,6 @@ class ParsingState
     protected $nodeStack = [];
 
     /**
-     * Array of node references of type.
-     *
-     * @var array
-     */
-    protected $nodesOfType = [];
-
-    /**
      * Set root node of this parsing state
      *
      * @param \CarstenWalther\XliffGen\Parser\SyntaxTree\AbstractNode $rootNode
@@ -96,24 +89,26 @@ class ParsingState
     }
 
     /**
-     * @param string $type
+     * @param string                                                  $type
+     * @param \CarstenWalther\XliffGen\Parser\SyntaxTree\AbstractNode $node
+     * @param array                                                   $nodes
+     *
+     * @return mixed
      */
-    public function getViewHelpersOfType(string $type)
+    public function fetchNodesByViewHelperName(string $type, \CarstenWalther\XliffGen\Parser\SyntaxTree\AbstractNode $node, array &$nodes = []) : array
     {
-        if (count($this->getRootNode()->getChildNodes()) > 0) {
-            foreach ($this->getRootNode()->getChildNodes() as $childNode) {
+        if ($node->hasChildNodes()) {
+            foreach ($node->getChildNodes() as $childNode) {
                 if ($childNode && $childNode instanceof \CarstenWalther\XliffGen\Parser\SyntaxTree\ViewHelperNode) {
                     if ($childNode->getViewHelperClassName() === $type) {
-                        $this->nodesOfType[] = $childNode;
+                        $nodes[] = $childNode;
                     } else {
-                        Debug::var_dump($childNode);
+                        $this->fetchNodesByViewHelperName($type, $childNode, $nodes);
                     }
                 }
             }
         }
 
-        Debug::var_dump($this->nodesOfType);
-
-        return $this->nodesOfType;
+        return $nodes;
     }
 }

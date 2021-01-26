@@ -686,7 +686,7 @@ class Parser
      *
      * @return string The fully qualified class name of the viewhelper
      */
-    protected function resolveViewHelperName(string $namespaceIdentifier, string $methodIdentifier) : string
+    public function resolveViewHelperName(string $namespaceIdentifier, string $methodIdentifier) : string
     {
         $explodedViewHelperName = explode('.', $methodIdentifier);
         if (count($explodedViewHelperName) > 1) {
