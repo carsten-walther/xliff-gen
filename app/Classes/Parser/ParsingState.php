@@ -2,7 +2,7 @@
 
 namespace CarstenWalther\XliffGen\Parser;
 
-use CarstenWalther\XliffGen\Utility\Debug;
+use CarstenWalther\XliffGen\Utility\DebugUtility;
 
 /**
  * Class ParsingState
@@ -97,6 +97,19 @@ class ParsingState
      */
     public function getNodesByViewHelperName(string $type, \CarstenWalther\XliffGen\Parser\SyntaxTree\AbstractNode $node, array &$nodes = []) : array
     {
+        $nodeArray = \CarstenWalther\XliffGen\Utility\ArrayUtility::objectToArray($node);
+
+        $result = \CarstenWalther\XliffGen\Utility\ArrayUtility::arraySearchRecursive($type, $nodeArray);
+
+
+        DebugUtility::var_dump($result);
+
+
+
+
+        return [];
+
+        /*
         if ($node->hasChildNodes()) {
             foreach ($node->getChildNodes() as $childNode) {
                 if ($childNode && $childNode instanceof \CarstenWalther\XliffGen\Parser\SyntaxTree\ViewHelperNode) {
@@ -113,5 +126,6 @@ class ParsingState
         }
 
         return $nodes;
+        */
     }
 }

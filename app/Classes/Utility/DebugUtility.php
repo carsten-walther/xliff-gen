@@ -3,11 +3,11 @@
 namespace CarstenWalther\XliffGen\Utility;
 
 /**
- * Class Debug
+ * Class DebugUtility
  *
  * @package CarstenWalther\XliffGen\Utility
  */
-class Debug
+class DebugUtility
 {
     /**
      * @param             $variable
@@ -18,7 +18,7 @@ class Debug
     public static function var_dump($variable, string $title = null) : string
     {
         $output = '<div>';
-        if ($title !== '') {
+        if ($title) {
             $output .= '    <p><strong>' . $title . '</strong></p>';
         }
         $output .= '    <pre>';
