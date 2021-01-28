@@ -2,8 +2,6 @@
 
 namespace CarstenWalther\XliffGen\Parser;
 
-use CarstenWalther\XliffGen\Utility\DebugUtility;
-
 /**
  * Class ParsingState
  *
@@ -94,38 +92,29 @@ class ParsingState
      * @param array                                                   $nodes
      *
      * @return mixed
+     * @throws \ReflectionException
      */
     public function getNodesByViewHelperName(string $type, \CarstenWalther\XliffGen\Parser\SyntaxTree\AbstractNode $node, array &$nodes = []) : array
     {
-        $nodeArray = \CarstenWalther\XliffGen\Utility\ArrayUtility::objectToArray($node);
-
-        $result = \CarstenWalther\XliffGen\Utility\ArrayUtility::arraySearchRecursive($type, $nodeArray);
-
-
-        DebugUtility::var_dump($result);
-
-
-
-
-        return [];
-
-        /*
-        if ($node->hasChildNodes()) {
-            foreach ($node->getChildNodes() as $childNode) {
-                if ($childNode && $childNode instanceof \CarstenWalther\XliffGen\Parser\SyntaxTree\ViewHelperNode) {
-                    if ($childNode->getViewHelperClassName() === $type) {
-                        $nodes[] = $childNode;
-                    } else {
-
-                        Debug::var_dump($childNode);
-
-                        #$this->getNodesByViewHelperName($type, $childNode, $nodes);
+        if (is_object($node)) {
+            $reflectionClass = new \ReflectionClass(get_class($node));
+            foreach ($reflectionClass->getProperties() as $property) {
+                $property->setAccessible(true);
+                if (is_array($property->getValue($node))) {
+                    foreach ($property->getValue($node) as $key => $object) {
+                        if (is_object($object)) {
+                            if (get_class($object) === \CarstenWalther\XliffGen\Parser\SyntaxTree\ViewHelperNode::class) {
+                                if ($object->getViewHelperClassName() === $type) {
+                                    $nodes[] = $object;
+                                }
+                                $this->getNodesByViewHelperName($type, $object, $nodes);
+                            }
+                        }
                     }
                 }
+                $property->setAccessible(false);
             }
         }
-
         return $nodes;
-        */
     }
 }

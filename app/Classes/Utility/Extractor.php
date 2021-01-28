@@ -61,10 +61,7 @@ class Extractor
         $viewHelperName = $this->parser->resolveViewHelperName($namespace, $method);
         $nodes = $parsingState->getNodesByViewHelperName($viewHelperName, $parsingState->getRootNode());
 
-        #Debug::var_dump($nodes);
-        die();
-
-        if ($nodes) {
+        if (is_array($nodes) && count($nodes) > 0) {
             foreach ($nodes as $node) {
                 /** @var \CarstenWalther\XliffGen\Parser\SyntaxTree\NodeInterface $node */
                 $nodeArguments = $node->getArguments();
@@ -91,8 +88,6 @@ class Extractor
                 $xlf->addTranslationUnit($translationUnit);
             }
         }
-
-        die();
 
         return $xlf;
     }
