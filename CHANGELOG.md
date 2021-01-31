@@ -20,3 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - improvements to ui
 - add select2 for select options
+
+## [2.1.0] - 2021-01-31
+### Added
+- translation service watson
+- ui improvements
