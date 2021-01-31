@@ -2,9 +2,9 @@
 .DS_Store
 
 # folders
-.idea/
-vendor/
-templates_c/
+/.idea/
+/vendor/
+/templates_c/
 
 # project files
-config.php
+/config.php
