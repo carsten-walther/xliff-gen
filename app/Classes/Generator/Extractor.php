@@ -51,6 +51,7 @@ class Extractor
      *
      * @return null|\CarstenWalther\XliffGen\Domain\Model\Xlf
      * @throws \Exception
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function extract($namespace = '', $method = '') : ?Xlf
     {
@@ -86,17 +87,36 @@ class Extractor
 
                 if ($nodeArguments['default'] instanceof TextNode) {
                     $source = $nodeArguments['default']->getText();
-                    $target = $this->configuration['targetLanguage'] ? $source : '';
                 }
 
                 $translationUnit->setSource($source);
                 $translationUnit->setTarget($target);
                 $translationUnit->setWrapWithCdata($this->shouldWrappedWithCdata($source));
-                $translationUnit->setPreserveSpace($this->shouldPreserveSpace($source, $source, $this->configuration['targetLanguage']));
+                $translationUnit->setPreserveSpace($this->shouldPreserveSpace($target, $source, $this->configuration['targetLanguage']));
 
                 $xlf->addTranslationUnit($translationUnit);
             }
         }
+
+        if ($this->configuration['targetLanguage'] && $this->configuration['translateTargetLanguages']) {
+
+            $texts = [];
+            foreach ($xlf->getTranslationUnits() as $key => $translationUnit) {
+                $texts[$key] = $translationUnit->getSource();
+            }
+
+            if (mb_strlen(implode('', $texts), '8bit') <= 51200) {
+                $translator = new Translator($texts, $this->configuration['sourceLanguage'], $this->configuration['targetLanguage']);
+                $translatedTexts = $translator->translate();
+            } else {
+                $translatedTexts = $texts;
+            }
+
+            foreach ($xlf->getTranslationUnits() as $key => $translationUnit) {
+                $translationUnit->setTarget($translatedTexts[$key]);
+            }
+        }
+
         return $xlf;
     }
 

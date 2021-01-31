@@ -13,6 +13,7 @@ ini_set('error_log', $basePath . '/php_error.log');
  * run: php -S localhost:8000
  */
 
+require $basePath . '/config.php';
 require $basePath . '/vendor/autoload.php';
 
 // for Windows: replacing backslashes (\) by slashes (/)

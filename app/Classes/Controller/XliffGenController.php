@@ -106,6 +106,7 @@ class XliffGenController
     /**
      * @throws \SmartyException
      * @throws \Exception
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     protected function executeAction() : void
     {
@@ -145,7 +146,8 @@ class XliffGenController
                             'sourceLanguage' => $arguments['sourceLanguage'],
                             'targetLanguage' => $arguments['sourceLanguage'] !== $targetLanguage ? $targetLanguage : null,
                             'productName' => strip_tags($arguments['productName']),
-                            'original' => $arguments['sourceLanguage'] !== $targetLanguage ? 'locallang_' . strtolower($name) . '.xlf' : ''
+                            'original' => $arguments['sourceLanguage'] !== $targetLanguage ? 'locallang_' . strtolower($name) . '.xlf' : '',
+                            'translateTargetLanguages' => $arguments['translateTargetLanguages']
                         ]);
 
                         $xlf = $extractor->extract('f', 'translate');
