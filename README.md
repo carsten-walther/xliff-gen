@@ -23,6 +23,16 @@ composer install
 
 Done.
 
+## Configuration
+
+Add a file ```config.php``` into your root folder with the following content:
+
+```php
+<?php
+
+define('APIKEY', 'your watson api key');
+```
+
 ## Running
 
 If everything is done you can run this locally via the build in php webserver. You have to call
