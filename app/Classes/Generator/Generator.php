@@ -1,10 +1,14 @@
 <?php
 
-namespace CarstenWalther\XliffGen\Utility;
+namespace CarstenWalther\XliffGen\Generator;
+
+use CarstenWalther\XliffGen\Domain\Model\Xlf;
+use CarstenWalther\XliffGen\View\View;
 
 /**
  * Class Generator
- * @package CarstenWalther\XliffGen
+ *
+ * @package CarstenWalther\XliffGen\Generator
  */
 class Generator
 {
@@ -31,7 +35,7 @@ class Generator
      * @param \CarstenWalther\XliffGen\Domain\Model\Xlf|null $xlf
      * @param string                                         $basePath
      */
-    public function __construct(\CarstenWalther\XliffGen\Domain\Model\Xlf $xlf = null, string $basePath)
+    public function __construct(Xlf $xlf = null, string $basePath)
     {
         $this->xlf = $xlf;
         $this->basePath = $basePath;
@@ -39,11 +43,11 @@ class Generator
 
     /**
      * @return false|string
-     * @throws \SmartyException
+     * @throws \SmartyException|\ReflectionException
      */
     public function generate()
     {
-        $this->view = new \CarstenWalther\XliffGen\View\View();
+        $this->view = new View();
         $this->view->setBasePath($this->basePath);
         $this->view->setTemplatePath($this->basePath . '/Resources/Private/Templates/');
         $this->view->assign('xlf', $this->xlf->toArray());

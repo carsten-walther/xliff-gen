@@ -4,9 +4,10 @@ namespace CarstenWalther\XliffGen\Domain\Model;
 
 /**
  * Class AlternativeTranslation
+ *
  * @package CarstenWalther\XliffGen\Domain\Model
  */
-class AlternativeTranslation
+class AlternativeTranslation extends AbstractModel
 {
     /**
      * @var string
@@ -24,17 +25,6 @@ class AlternativeTranslation
     public function __construct()
     {
 
-    }
-
-    /**
-     * @return array
-     */
-    public function toArray() : array
-    {
-        return [
-            'language' => $this->getLanguage(),
-            'string' => $this->getString()
-        ];
     }
 
     /**

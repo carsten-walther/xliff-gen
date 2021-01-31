@@ -7,6 +7,8 @@ use CarstenWalther\XliffGen\Parser\SyntaxTree\ObjectAccessorNode;
 use CarstenWalther\XliffGen\Parser\SyntaxTree\RootNode;
 use CarstenWalther\XliffGen\Parser\SyntaxTree\TextNode;
 use CarstenWalther\XliffGen\Parser\SyntaxTree\ViewHelperNode;
+use Exception;
+use RuntimeException;
 
 /**
  * Class Parser
@@ -15,9 +17,6 @@ use CarstenWalther\XliffGen\Parser\SyntaxTree\ViewHelperNode;
  */
 class Parser
 {
-    public static $SCAN_PATTERN_NAMESPACEDECLARATION = '/(?<!\\\\){namespace\s*(?P<identifier>[a-zA-Z]+[a-zA-Z0-9]*)\s*=\s*(?P<phpNamespace>(?:[A-Za-z0-9\.]+|Tx)(?:\\\\\w+)+)\s*}/m';
-    public static $SCAN_PATTERN_XMLNSDECLARATION = '/\sxmlns:(?P<identifier>.*?)="(?P<xmlNamespace>.*?)"/m';
-
     /**
      * The following two constants are used for tracking whether we are currently
      * parsing ViewHelper arguments or not. This is used to parse arrays only as
@@ -25,7 +24,8 @@ class Parser
      */
     public const CONTEXT_INSIDE_VIEWHELPER_ARGUMENTS = 1;
     public const CONTEXT_OUTSIDE_VIEWHELPER_ARGUMENTS = 2;
-
+    public static $SCAN_PATTERN_NAMESPACEDECLARATION = '/(?<!\\\\){namespace\s*(?P<identifier>[a-zA-Z]+[a-zA-Z0-9]*)\s*=\s*(?P<phpNamespace>(?:[A-Za-z0-9\.]+|Tx)(?:\\\\\w+)+)\s*}/m';
+    public static $SCAN_PATTERN_XMLNSDECLARATION = '/\sxmlns:(?P<identifier>.*?)="(?P<xmlNamespace>.*?)"/m';
     /**
      * This regular expression splits the input string at all dynamic tags, AND
      * on all <![CDATA[...]]> sections.
@@ -282,7 +282,7 @@ class Parser
     public function parse(string $templateString) : ParsingState
     {
         if (!is_string($templateString)) {
-            throw new \Exception('Parser requires a template string as argument, ' . gettype($templateString) . ' given.');
+            throw new RuntimeException('Parser requires a template string as argument, ' . gettype($templateString) . ' given.');
         }
 
         $this->reset();
@@ -323,7 +323,7 @@ class Parser
                 continue;
             }
             if (array_key_exists($match['identifier'], $this->namespaces)) {
-                throw new \Exception(sprintf('Namespace identifier "%s" is already registered. Do not re-declare namespaces!', $match['identifier']));
+                throw new RuntimeException(sprintf('Namespace identifier "%s" is already registered. Do not re-declare namespaces!', $match['identifier']));
             }
             $matchedPhpNamespace = [];
             if (preg_match(self::$SCAN_PATTERN_DEFAULT_XML_NAMESPACE, $match['xmlNamespace'], $matchedPhpNamespace) === 0) {
@@ -337,7 +337,7 @@ class Parser
         preg_match_all(self::$SCAN_PATTERN_NAMESPACEDECLARATION, $templateString, $matches, PREG_SET_ORDER);
         foreach ($matches as $match) {
             if (array_key_exists($match['identifier'], $this->namespaces)) {
-                throw new \Exception(sprintf('Namespace identifier "%s" is already registered. Do not re-declare namespaces!', $match['identifier']));
+                throw new RuntimeException(sprintf('Namespace identifier "%s" is already registered. Do not re-declare namespaces!', $match['identifier']));
             }
             $this->namespaces[$match['identifier']] = $match['phpNamespace'];
         }
@@ -363,6 +363,20 @@ class Parser
     }
 
     /**
+     * Takes a regular expression template and replaces "NAMESPACE" with the
+     * currently registered namespace identifiers. Returns a regular expression
+     * which is ready to use.
+     *
+     * @param string $regularExpression Regular expression template
+     *
+     * @return string Regular expression ready to be used
+     */
+    protected function prepareTemplateRegularExpression(string $regularExpression) : string
+    {
+        return str_replace('NAMESPACE', implode('|', array_keys($this->namespaces)), $regularExpression);
+    }
+
+    /**
      * Build object tree from the split template
      *
      * @param array   $splitTemplate The split template, so that every tag with a namespace declaration is already a seperate array element.
@@ -376,10 +390,7 @@ class Parser
         $regularExpression_openingViewHelperTag = $this->prepareTemplateRegularExpression(self::$SCAN_PATTERN_TEMPLATE_VIEWHELPERTAG);
         $regularExpression_closingViewHelperTag = $this->prepareTemplateRegularExpression(self::$SCAN_PATTERN_TEMPLATE_CLOSINGVIEWHELPERTAG);
 
-        /** @var $state ParsingState */
         $state = new ParsingState();
-
-        /** @var $rootNode RootNode */
         $rootNode = new RootNode();
 
         $state->setRootNode($rootNode);
@@ -399,35 +410,47 @@ class Parser
         }
 
         if ($state->countNodeStack() !== 1) {
-            throw new \Exception('Not all tags were closed!', 1238169398);
+            throw new RuntimeException('Not all tags were closed!', 1238169398);
         }
 
         return $state;
     }
 
     /**
-     * Removes escapings from a given argument string and trims the outermost
-     * quotes.
+     * Text node handler
      *
-     * This method is meant as a helper for regular expression results.
+     * @param \CarstenWalther\XliffGen\Parser\ParsingState $state
+     * @param string                                       $text
      *
-     * @param string $quotedValue Value to unquote
-     *
-     * @return string Unquoted value
+     * @return void
+     * @throws \Exception
      */
-    protected function unquoteString(string $quotedValue) : string
+    protected function textHandler(ParsingState $state, string $text) : void
     {
-        switch ($quotedValue[0]) {
-            case '"':
-                $value = str_replace('\\"', '"', preg_replace('/(^"|"$)/', '', $quotedValue));
-                break;
-            case "'":
-                $value = str_replace("\\'", "'", preg_replace('/(^\'|\'$)/', '', $quotedValue));
-                break;
-            default:
-                $value = $quotedValue;
+        $node = new TextNode($text);
+        $state->getNodeFromStack()->addChildNode($node);
+    }
+
+    /**
+     * Handles an opening or self-closing view helper tag.
+     *
+     * @param \CarstenWalther\XliffGen\Parser\ParsingState $state
+     * @param string                                       $namespaceIdentifier Namespace identifier - being looked up in $this->namespaces
+     * @param string                                       $methodIdentifier    Method identifier
+     * @param string                                       $arguments           Arguments string, not yet parsed
+     * @param boolean                                      $selfclosing         true, if the tag is a self-closing tag.
+     *
+     * @return void
+     * @throws \Exception
+     */
+    protected function openingViewHelperTagHandler(ParsingState $state, string $namespaceIdentifier, string $methodIdentifier, string $arguments, bool $selfclosing) : void
+    {
+        $argumentsObjectTree = $this->parseArguments($arguments);
+        $this->initializeViewHelperAndAddItToStack($state, $namespaceIdentifier, $methodIdentifier, $argumentsObjectTree);
+
+        if ($selfclosing) {
+            $node = $state->popNodeFromStack();
         }
-        return str_replace('\\\\', '\\', $value);
     }
 
     /**
@@ -456,6 +479,31 @@ class Parser
     }
 
     /**
+     * Removes escapings from a given argument string and trims the outermost
+     * quotes.
+     *
+     * This method is meant as a helper for regular expression results.
+     *
+     * @param string $quotedValue Value to unquote
+     *
+     * @return string Unquoted value
+     */
+    protected function unquoteString(string $quotedValue) : string
+    {
+        switch ($quotedValue[0]) {
+            case '"':
+                $value = str_replace('\\"', '"', preg_replace('/(^"|"$)/', '', $quotedValue));
+                break;
+            case "'":
+                $value = str_replace("\\'", "'", preg_replace('/(^\'|\'$)/', '', $quotedValue));
+                break;
+            default:
+                $value = $quotedValue;
+        }
+        return str_replace('\\\\', '\\', $value);
+    }
+
+    /**
      * Build up an argument object tree for the string in $argumentString.
      * This builds up the tree for a single argument value.
      *
@@ -477,55 +525,49 @@ class Parser
     }
 
     /**
-     * Takes a regular expression template and replaces "NAMESPACE" with the
-     * currently registered namespace identifiers. Returns a regular expression
-     * which is ready to use.
-     *
-     * @param string $regularExpression Regular expression template
-     *
-     * @return string Regular expression ready to be used
-     */
-    protected function prepareTemplateRegularExpression(string $regularExpression) : string
-    {
-        return str_replace('NAMESPACE', implode('|', array_keys($this->namespaces)), $regularExpression);
-    }
-
-    /**
-     * Text node handler
-     *
-     * @param \CarstenWalther\XliffGen\Parser\ParsingState $state
-     * @param string                                       $text
-     *
-     * @return void
-     * @throws \Exception
-     */
-    protected function textHandler(ParsingState $state, string $text) : void
-    {
-        /** @var $node TextNode */
-        $node = new TextNode($text);
-        $state->getNodeFromStack()->addChildNode($node);
-    }
-
-    /**
-     * Handles an opening or self-closing view helper tag.
+     * Initialize the given ViewHelper and adds it to the current node and to
+     * the stack.
      *
      * @param \CarstenWalther\XliffGen\Parser\ParsingState $state
      * @param string                                       $namespaceIdentifier Namespace identifier - being looked up in $this->namespaces
      * @param string                                       $methodIdentifier    Method identifier
-     * @param string                                       $arguments           Arguments string, not yet parsed
-     * @param boolean                                      $selfclosing         true, if the tag is a self-closing tag.
+     * @param array                                        $argumentsObjectTree Arguments object tree
      *
      * @return void
      * @throws \Exception
      */
-    protected function openingViewHelperTagHandler(ParsingState $state, string $namespaceIdentifier, string $methodIdentifier, string $arguments, bool $selfclosing) : void
+    protected function initializeViewHelperAndAddItToStack(ParsingState $state, string $namespaceIdentifier, string $methodIdentifier, array $argumentsObjectTree) : void
     {
-        $argumentsObjectTree = $this->parseArguments($arguments);
-        $this->initializeViewHelperAndAddItToStack($state, $namespaceIdentifier, $methodIdentifier, $argumentsObjectTree);
-
-        if ($selfclosing) {
-            $node = $state->popNodeFromStack();
+        if (!array_key_exists($namespaceIdentifier, $this->namespaces)) {
+            throw new Exception('Namespace could not be resolved. This exception should never be thrown!', 1224254792);
         }
+
+        $resolvedViewHelperClassName = $this->resolveViewHelperName($namespaceIdentifier, $methodIdentifier);
+
+        $currentViewHelperNode = new ViewHelperNode($resolvedViewHelperClassName, $argumentsObjectTree);
+        $state->getNodeFromStack()->addChildNode($currentViewHelperNode);
+        $state->pushNodeToStack($currentViewHelperNode);
+    }
+
+    /**
+     * Resolve a viewhelper name.
+     *
+     * @param string $namespaceIdentifier Namespace identifier for the view helper.
+     * @param string $methodIdentifier    Method identifier, might be hierarchical like "link.url"
+     *
+     * @return string The fully qualified class name of the viewhelper
+     */
+    public function resolveViewHelperName(string $namespaceIdentifier, string $methodIdentifier) : string
+    {
+        $explodedViewHelperName = explode('.', $methodIdentifier);
+        if (count($explodedViewHelperName) > 1) {
+            $className = implode('\\', array_map('ucfirst', $explodedViewHelperName));
+        } else {
+            $className = ucfirst($explodedViewHelperName[0]);
+        }
+        $className .= 'ViewHelper';
+
+        return $this->namespaces[$namespaceIdentifier] . '\\' . $className;
     }
 
     /**
@@ -541,14 +583,14 @@ class Parser
     protected function closingViewHelperTagHandler(ParsingState $state, string $namespaceIdentifier, string $methodIdentifier) : void
     {
         if (!array_key_exists($namespaceIdentifier, $this->namespaces)) {
-            throw new \Exception('Namespace could not be resolved. This exception should never be thrown!');
+            throw new RuntimeException('Namespace could not be resolved. This exception should never be thrown!');
         }
         $lastStackElement = $state->popNodeFromStack();
         if (!($lastStackElement instanceof ViewHelperNode)) {
-            throw new \Exception('You closed a templating tag which you never opened!');
+            throw new RuntimeException('You closed a templating tag which you never opened!');
         }
         if ($lastStackElement->getViewHelperClassName() !== $this->resolveViewHelperName($namespaceIdentifier, $methodIdentifier)) {
-            throw new \Exception('Templating tags not properly nested. Expected: ' . $lastStackElement->getViewHelperClassName() . '; Actual: ' . $this->resolveViewHelperName($namespaceIdentifier, $methodIdentifier));
+            throw new RuntimeException('Templating tags not properly nested. Expected: ' . $lastStackElement->getViewHelperClassName() . '; Actual: ' . $this->resolveViewHelperName($namespaceIdentifier, $methodIdentifier));
         }
     }
 
@@ -578,23 +620,6 @@ class Parser
                 $this->textHandler($state, $section);
             }
         }
-    }
-
-    /**
-     * Handler for array syntax. This creates the array object recursively and
-     * adds it to the current node.
-     *
-     * @param \CarstenWalther\XliffGen\Parser\ParsingState $state
-     * @param string                                       $arrayText The array as string.
-     *
-     * @return void
-     * @throws \Exception
-     */
-    protected function arrayHandler(ParsingState $state, string $arrayText) : void
-    {
-        /** @var $arrayNode ArrayNode */
-        $node = new ArrayNode($this->recursiveArrayHandler($arrayText));
-        $state->getNodeFromStack()->addChildNode($node);
     }
 
     /**
@@ -639,7 +664,6 @@ class Parser
 
         // Object Accessor
         if ($objectAccessorString !== '') {
-            /** @var $node ObjectAccessorNode */
             $node = new ObjectAccessorNode($objectAccessorString);
             $state->getNodeFromStack()->addChildNode($node);
         }
@@ -651,50 +675,21 @@ class Parser
     }
 
     /**
-     * Initialize the given ViewHelper and adds it to the current node and to
-     * the stack.
+     * Post process the arguments for the ViewHelpers in the object accessor
+     * syntax. We need to convert an array into an array of (only) nodes
      *
-     * @param \CarstenWalther\XliffGen\Parser\ParsingState $state
-     * @param string                                       $namespaceIdentifier Namespace identifier - being looked up in $this->namespaces
-     * @param string                                       $methodIdentifier    Method identifier
-     * @param array                                        $argumentsObjectTree Arguments object tree
+     * @param array $arguments The arguments to be processed
      *
-     * @return void
-     * @throws \Exception
+     * @return array the processed array
      */
-    protected function initializeViewHelperAndAddItToStack(ParsingState $state, string $namespaceIdentifier, string $methodIdentifier, array $argumentsObjectTree) : void
+    protected function postProcessArgumentsForObjectAccessor(array $arguments) : array
     {
-        if (!array_key_exists($namespaceIdentifier, $this->namespaces)) {
-            throw new \Exception('Namespace could not be resolved. This exception should never be thrown!', 1224254792);
+        foreach ($arguments as $argumentName => $argumentValue) {
+            if (!is_object($argumentValue) && isset($argumentValue['data']['text'])) {
+                $arguments[$argumentName] = (string)$argumentValue['data']['text'];
+            }
         }
-
-        $resolvedViewHelperClassName = $this->resolveViewHelperName($namespaceIdentifier, $methodIdentifier);
-
-        /** @var $currentViewHelperNode ViewHelperNode */
-        $currentViewHelperNode = new ViewHelperNode($resolvedViewHelperClassName, $argumentsObjectTree);
-        $state->getNodeFromStack()->addChildNode($currentViewHelperNode);
-        $state->pushNodeToStack($currentViewHelperNode);
-    }
-
-    /**
-     * Resolve a viewhelper name.
-     *
-     * @param string $namespaceIdentifier Namespace identifier for the view helper.
-     * @param string $methodIdentifier    Method identifier, might be hierarchical like "link.url"
-     *
-     * @return string The fully qualified class name of the viewhelper
-     */
-    public function resolveViewHelperName(string $namespaceIdentifier, string $methodIdentifier) : string
-    {
-        $explodedViewHelperName = explode('.', $methodIdentifier);
-        if (count($explodedViewHelperName) > 1) {
-            $className = implode('\\', array_map('ucfirst', $explodedViewHelperName));
-        } else {
-            $className = ucfirst($explodedViewHelperName[0]);
-        }
-        $className .= 'ViewHelper';
-
-        return $this->namespaces[$namespaceIdentifier] . '\\' . $className;
+        return $arguments;
     }
 
     /**
@@ -729,28 +724,28 @@ class Parser
                 } elseif (array_key_exists('Subarray', $singleMatch) && !empty($singleMatch['Subarray'])) {
                     $arrayToBuild[$arrayKey] = $this->recursiveArrayHandler($singleMatch['Subarray']);
                 } else {
-                    throw new \Exception('This exception should never be thrown, as the array value has to be of some type (Value given: "' . var_export($singleMatch, true) . '"). Please post your template to the bugtracker at forge.typo3.org.');
+                    throw new RuntimeException('This exception should never be thrown, as the array value has to be of some type (Value given: "' . var_export($singleMatch, true) . '"). Please post your template to the bugtracker at forge.typo3.org.');
                 }
             }
             return $arrayToBuild;
         }
-        throw new \Exception('This exception should never be thrown, there is most likely some error in the regular expressions. Please post your template to the bugtracker at forge.typo3.org.');
+        throw new RuntimeException('This exception should never be thrown, there is most likely some error in the regular expressions. Please post your template to the bugtracker at forge.typo3.org.');
     }
 
     /**
-     * Post process the arguments for the ViewHelpers in the object accessor
-     * syntax. We need to convert an array into an array of (only) nodes
+     * Handler for array syntax. This creates the array object recursively and
+     * adds it to the current node.
      *
-     * @param array $arguments The arguments to be processed
-     * @return array the processed array
+     * @param \CarstenWalther\XliffGen\Parser\ParsingState $state
+     * @param string                                       $arrayText The array as string.
+     *
+     * @return void
+     * @throws \Exception
      */
-    protected function postProcessArgumentsForObjectAccessor(array $arguments) : array
+    protected function arrayHandler(ParsingState $state, string $arrayText) : void
     {
-        foreach ($arguments as $argumentName => $argumentValue) {
-            if (!is_object($argumentValue) && isset($argumentValue['data']['text'])) {
-                $arguments[$argumentName] = (string)$argumentValue['data']['text'];
-            }
-        }
-        return $arguments;
+        /** @var $arrayNode ArrayNode */
+        $node = new ArrayNode($this->recursiveArrayHandler($arrayText));
+        $state->getNodeFromStack()->addChildNode($node);
     }
 }

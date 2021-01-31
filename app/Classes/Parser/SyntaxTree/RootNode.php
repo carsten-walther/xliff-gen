@@ -7,7 +7,7 @@ namespace CarstenWalther\XliffGen\Parser\SyntaxTree;
  *
  * @package CarstenWalther\XliffGen\Parser\SyntaxTree
  */
-class RootNode extends \CarstenWalther\XliffGen\Parser\SyntaxTree\AbstractNode
+class RootNode extends AbstractNode
 {
 
 }

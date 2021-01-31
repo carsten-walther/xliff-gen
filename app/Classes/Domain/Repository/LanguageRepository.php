@@ -2,8 +2,12 @@
 
 namespace CarstenWalther\XliffGen\Domain\Repository;
 
+use CarstenWalther\XliffGen\Domain\Model\Language;
+use InvalidArgumentException;
+
 /**
  * Class LanguageRepository
+ *
  * @package CarstenWalther\XliffGen\Domain\Repository
  */
 class LanguageRepository extends AbstractCsvRepository
@@ -29,42 +33,11 @@ class LanguageRepository extends AbstractCsvRepository
     protected $next = null;
 
     /**
-     * @return array<\CarstenWalther\XliffGen\Domain\Model\Language>
-     */
-    public function findAll() : array
-    {
-        $this->resetRelatives();
-
-        if (is_resource($this->csv)) {
-            $all = [];
-            $this->rewind();
-
-            while (!feof($this->csv)) {
-                $row = fgetcsv($this->csv, 0, $this->delimiter, $this->enclosure, $this->escape);
-
-                if (isset($row[0]) && $row[0]) {
-                    $this->language = new \CarstenWalther\XliffGen\Domain\Model\Language();
-                    $this->language->setId($row[0]);
-                    $this->language->setTitle($row[1]);
-
-                    if ($this->valid()) {
-                        $all[] = $this->current();
-                    }
-                }
-                $this->language = null;
-            }
-            return $all;
-        } else {
-            throw new \InvalidArgumentException('$this->csv is no resource.');
-        }
-    }
-
-    /**
      * @param string $id
      *
      * @return \CarstenWalther\XliffGen\Domain\Model\Language
      */
-    public function findById(string $id) : \CarstenWalther\XliffGen\Domain\Model\Language
+    public function findById(string $id) : Language
     {
         $languages = $this->findAll();
 
@@ -91,6 +64,37 @@ class LanguageRepository extends AbstractCsvRepository
 
                 return $language;
             }
+        }
+    }
+
+    /**
+     * @return array<\CarstenWalther\XliffGen\Domain\Model\Language>
+     */
+    public function findAll() : array
+    {
+        $this->resetRelatives();
+
+        if (is_resource($this->csv)) {
+            $all = [];
+            $this->rewind();
+
+            while (!feof($this->csv)) {
+                $row = fgetcsv($this->csv, 0, $this->delimiter, $this->enclosure, $this->escape);
+
+                if (isset($row[0]) && $row[0]) {
+                    $this->language = new Language();
+                    $this->language->setId($row[0]);
+                    $this->language->setTitle($row[1]);
+
+                    if ($this->valid()) {
+                        $all[] = $this->current();
+                    }
+                }
+                $this->language = null;
+            }
+            return $all;
+        } else {
+            throw new InvalidArgumentException('$this->csv is no resource.');
         }
     }
 

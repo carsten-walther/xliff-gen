@@ -4,9 +4,10 @@ namespace CarstenWalther\XliffGen\Domain\Model;
 
 /**
  * Class Type
+ *
  * @package CarstenWalther\XliffGen\Domain\Model
  */
-class Type
+class Type extends AbstractModel
 {
     /**
      * @var string
@@ -24,17 +25,6 @@ class Type
     public function __construct()
     {
 
-    }
-
-    /**
-     * @return array
-     */
-    public function toArray() : array
-    {
-        return array(
-            'id' => $this->getId(),
-            'title' => $this->getTitle()
-        );
     }
 
     /**

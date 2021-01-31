@@ -7,7 +7,7 @@ namespace CarstenWalther\XliffGen\Parser\SyntaxTree;
  *
  * @package CarstenWalther\XliffGen\Parser\SyntaxTree
  */
-class AbstractNode implements \CarstenWalther\XliffGen\Parser\SyntaxTree\NodeInterface
+class AbstractNode implements NodeInterface
 {
     /**
      * List of Child Nodes.
@@ -40,6 +40,7 @@ class AbstractNode implements \CarstenWalther\XliffGen\Parser\SyntaxTree\NodeInt
      * Appends a sub node to this node. Is used inside the parser to append children
      *
      * @param NodeInterface $childNode The sub node to add
+     *
      * @return void
      */
     public function addChildNode(NodeInterface $childNode) : void

@@ -2,6 +2,13 @@
 
 namespace CarstenWalther\XliffGen\Controller;
 
+use CarstenWalther\XliffGen\Domain\Repository\LanguageRepository;
+use CarstenWalther\XliffGen\Domain\Repository\TypeRepository;
+use CarstenWalther\XliffGen\Generator\Extractor;
+use CarstenWalther\XliffGen\Generator\Generator;
+use CarstenWalther\XliffGen\Utility\ZipUtility;
+use CarstenWalther\XliffGen\View\View;
+
 /**
  * Class XliffGenController
  *
@@ -66,9 +73,9 @@ class XliffGenController
     protected function initRepository($repositoryConfiguration) : void
     {
         if ($repositoryConfiguration['type'] === 'csv') {
-            $this->typeRepository = new \CarstenWalther\XliffGen\Domain\Repository\TypeRepository($repositoryConfiguration['data'] . '/Types.csv');
+            $this->typeRepository = new TypeRepository($repositoryConfiguration['data'] . '/Types.csv');
             $this->typeRepository->setBasePath($this->basePath);
-            $this->languageRepository = new \CarstenWalther\XliffGen\Domain\Repository\LanguageRepository($repositoryConfiguration['data'] . '/Languages.csv');
+            $this->languageRepository = new LanguageRepository($repositoryConfiguration['data'] . '/Languages.csv');
             $this->languageRepository->setBasePath($this->basePath);
         }
     }
@@ -78,7 +85,7 @@ class XliffGenController
      */
     protected function initView() : void
     {
-        $this->view = new \CarstenWalther\XliffGen\View\View();
+        $this->view = new View();
         $this->view->setTitle('XLIFF Generator');
         $this->view->setBasePath($this->basePath);
         $this->view->setLayoutPath($this->basePath . '/Resources/Private/Layout/');
@@ -94,29 +101,6 @@ class XliffGenController
         $action = $arguments['action'] ?? 'index';
 
         $this->{$action . 'Action'}();
-    }
-
-    /**
-     * @throws \SmartyException
-     */
-    protected function indexAction() : void
-    {
-        $typeObjects = $this->typeRepository->findAll();
-        $types = [];
-        foreach ($typeObjects as $count => $typeObject) {
-            $types[$count] = $typeObject->toArray();
-        }
-
-        $languageObjects = $this->languageRepository->findAll();
-        $languages = [];
-        foreach ($languageObjects as $count => $languageObject) {
-            $languages[$count] = $languageObject->toArray();
-        }
-
-        $this->view->assign('baseUrl', $this->baseUrl);
-        $this->view->assign('types', $types);
-        $this->view->assign('languages', $languages);
-        $this->view->render('Index.html');
     }
 
     /**
@@ -155,28 +139,29 @@ class XliffGenController
                         $fileContent = file_get_contents($tmp_name);
                         $fileContent = str_replace(['\"', "\'"], '"', $fileContent);
 
-                        $extractor = new \CarstenWalther\XliffGen\Utility\Extractor($fileContent, [
+                        $extractor = new Extractor($fileContent, [
+                            'version' => $arguments['version'],
+                            'type' => $arguments['type'],
                             'sourceLanguage' => $arguments['sourceLanguage'],
                             'targetLanguage' => $arguments['sourceLanguage'] !== $targetLanguage ? $targetLanguage : null,
-                            'productName' => $arguments['productName'],
+                            'productName' => strip_tags($arguments['productName']),
                             'original' => $arguments['sourceLanguage'] !== $targetLanguage ? 'locallang_' . strtolower($name) . '.xlf' : ''
                         ]);
 
                         $xlf = $extractor->extract('f', 'translate');
 
                         if ($xlf) {
-                            $xlf->setType((array_key_exists('type', $arguments) ? $arguments['type'] : ''));
-                            $xlf->setDescription((array_key_exists('description', $arguments) ? $arguments['description'] : ''));
-                            $xlf->setAuthorEmail((array_key_exists('authorEmail', $arguments) ? $arguments['authorEmail'] : ''));
-                            $xlf->setAuthorName((array_key_exists('authorName', $arguments) ? $arguments['authorName'] : ''));
+                            $xlf->setDescription(strip_tags(array_key_exists('description', $arguments) ? $arguments['description'] : ''));
+                            $xlf->setAuthorEmail(strip_tags(array_key_exists('authorEmail', $arguments) ? $arguments['authorEmail'] : ''));
+                            $xlf->setAuthorName(strip_tags(array_key_exists('authorName', $arguments) ? $arguments['authorName'] : ''));
                         }
 
-                        $generator = new \CarstenWalther\XliffGen\Utility\Generator($xlf, $this->basePath);
+                        $generator = new Generator($xlf, $this->basePath);
 
                         $xlfStorage[$targetLanguage][] = [
                             'content' => $generator->generate(),
                             'filename' => ($arguments['sourceLanguage'] !== $targetLanguage ? $targetLanguage . '.' : '') . 'locallang_' . strtolower($name) . '.xlf',
-                            'relpath' => $arguments['productName'] . '/Resources/Private/Language',
+                            'relpath' => ($arguments['generatePath']) ? strip_tags($arguments['productName']) . '/Resources/Private/Language' : strip_tags($arguments['productName']),
                             'comment' => 'Generated by XLIFF Generator'
                         ];
                     } else {
@@ -187,7 +172,7 @@ class XliffGenController
         }
 
         if (isset($xlf)) {
-            $zip = new \CarstenWalther\XliffGen\Utility\Zip($arguments['productName'] . '.xliff.zip', 'Generated by XLIFF Generator');
+            $zip = new ZipUtility(strip_tags($arguments['productName']) . '.xliff.zip', 'Generated by XLIFF Generator');
             foreach ($xlfStorage as $lang) {
                 foreach ($lang as $xlf) {
                     $zip->addData($xlf['content'], $xlf['filename'], $xlf['relpath'], $xlf['comment']);
@@ -197,5 +182,29 @@ class XliffGenController
         }
 
         $this->indexAction();
+    }
+
+    /**
+     * @throws \SmartyException
+     * @throws \ReflectionException
+     */
+    protected function indexAction() : void
+    {
+        $typeObjects = $this->typeRepository->findAll();
+        $types = [];
+        foreach ($typeObjects as $count => $typeObject) {
+            $types[$count] = $typeObject->toArray();
+        }
+
+        $languageObjects = $this->languageRepository->findAll();
+        $languages = [];
+        foreach ($languageObjects as $count => $languageObject) {
+            $languages[$count] = $languageObject->toArray();
+        }
+
+        $this->view->assign('baseUrl', $this->baseUrl);
+        $this->view->assign('types', $types);
+        $this->view->assign('languages', $languages);
+        $this->view->render('Index.html');
     }
 }

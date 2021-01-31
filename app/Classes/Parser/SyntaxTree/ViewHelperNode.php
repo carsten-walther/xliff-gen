@@ -2,12 +2,14 @@
 
 namespace CarstenWalther\XliffGen\Parser\SyntaxTree;
 
+use SplObjectStorage;
+
 /**
  * Class ViewHelperNode
  *
  * @package CarstenWalther\XliffGen\Parser\SyntaxTree
  */
-class ViewHelperNode extends \CarstenWalther\XliffGen\Parser\SyntaxTree\AbstractNode
+class ViewHelperNode extends AbstractNode
 {
     /**
      * Class name of view helper
@@ -35,11 +37,11 @@ class ViewHelperNode extends \CarstenWalther\XliffGen\Parser\SyntaxTree\Abstract
      * Constructor.
      *
      * @param string $viewHelper The view helper
-     * @param array $arguments<NodeInterface> Arguments of view helper - each value is a RootNode.
+     * @param array  $arguments  <NodeInterface> Arguments of view helper - each value is a RootNode.
      */
     public function __construct(string $viewHelper, array $arguments)
     {
-        $this->viewHelpersByContext = new \SplObjectStorage();
+        $this->viewHelpersByContext = new SplObjectStorage();
         $this->arguments = $arguments;
         $this->viewHelperClassName = $viewHelper;
     }

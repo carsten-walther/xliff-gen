@@ -2,6 +2,8 @@
 
 namespace CarstenWalther\XliffGen\Utility;
 
+use ReflectionClass;
+
 /**
  * Class ArrayUtility
  *
@@ -12,10 +14,10 @@ class ArrayUtility
     /**
      * @param $object
      *
-     * @return array|mixed
+     * @return mixed
      * @throws \ReflectionException
      */
-    public static function objectToArray($object) : array
+    public static function objectToArray($object)
     {
         if (is_object($object)) {
             $object = self::dismount($object);
@@ -28,7 +30,7 @@ class ArrayUtility
         } else {
             $new[] = $object;
         }
-        return $new;
+        return self::sanitize($new);
     }
 
     /**
@@ -39,7 +41,7 @@ class ArrayUtility
      */
     public static function dismount($object) : array
     {
-        $reflectionClass = new \ReflectionClass(get_class($object));
+        $reflectionClass = new ReflectionClass(get_class($object));
         $array = [];
         foreach ($reflectionClass->getProperties() as $property) {
             $property->setAccessible(true);
@@ -50,22 +52,15 @@ class ArrayUtility
     }
 
     /**
-     * @param string $needle
-     * @param array  $haystack
+     * @param mixed $value
      *
      * @return mixed
      */
-    public static function arraySearchRecursive(string $needle, array $haystack)
+    private static function sanitize($value)
     {
-        foreach ($haystack as $key => $value) {
-            if ($needle === $value) {
-                return [$key];
-            }
-
-            if (is_array($value) && $subkey = self::arraySearchRecursive($needle, $value)) {
-                array_unshift($subkey, $key);
-                return $subkey;
-            }
+        if (is_array($value) && count($value) <= 1) {
+            return end($value);
         }
+        return $value;
     }
 }

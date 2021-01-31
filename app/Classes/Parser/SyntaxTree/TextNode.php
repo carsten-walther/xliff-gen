@@ -2,12 +2,14 @@
 
 namespace CarstenWalther\XliffGen\Parser\SyntaxTree;
 
+use RuntimeException;
+
 /**
  * Class TextNode
  *
  * @package CarstenWalther\XliffGen\Parser\SyntaxTree
  */
-class TextNode extends \CarstenWalther\XliffGen\Parser\SyntaxTree\AbstractNode
+class TextNode extends AbstractNode
 {
     /**
      * Contents of the text node
@@ -26,7 +28,7 @@ class TextNode extends \CarstenWalther\XliffGen\Parser\SyntaxTree\AbstractNode
     public function __construct(string $text)
     {
         if (!is_string($text)) {
-            throw new \Exception('Text node requires an argument of type string, "' . gettype($text) . '" given.');
+            throw new RuntimeException('Text node requires an argument of type string, "' . gettype($text) . '" given.');
         }
         $this->text = $text;
     }

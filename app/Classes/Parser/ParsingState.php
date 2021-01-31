@@ -2,6 +2,10 @@
 
 namespace CarstenWalther\XliffGen\Parser;
 
+use CarstenWalther\XliffGen\Parser\SyntaxTree\AbstractNode;
+use CarstenWalther\XliffGen\Parser\SyntaxTree\ViewHelperNode;
+use ReflectionClass;
+
 /**
  * Class ParsingState
  *
@@ -24,17 +28,6 @@ class ParsingState
     protected $nodeStack = [];
 
     /**
-     * Set root node of this parsing state
-     *
-     * @param \CarstenWalther\XliffGen\Parser\SyntaxTree\AbstractNode $rootNode
-     * @return void
-     */
-    public function setRootNode(\CarstenWalther\XliffGen\Parser\SyntaxTree\AbstractNode $rootNode) : void
-    {
-        $this->rootNode = $rootNode;
-    }
-
-    /**
      * Get root node of this parsing state.
      *
      * @return \CarstenWalther\XliffGen\Parser\SyntaxTree\AbstractNode The root node
@@ -45,13 +38,26 @@ class ParsingState
     }
 
     /**
+     * Set root node of this parsing state
+     *
+     * @param \CarstenWalther\XliffGen\Parser\SyntaxTree\AbstractNode $rootNode
+     *
+     * @return void
+     */
+    public function setRootNode(AbstractNode $rootNode) : void
+    {
+        $this->rootNode = $rootNode;
+    }
+
+    /**
      * Push a node to the node stack. The node stack holds all currently open
      * templating tags.
      *
      * @param \CarstenWalther\XliffGen\Parser\SyntaxTree\AbstractNode $node Node to push to node stack
+     *
      * @return void
      */
-    public function pushNodeToStack(\CarstenWalther\XliffGen\Parser\SyntaxTree\AbstractNode $node) : void
+    public function pushNodeToStack(AbstractNode $node) : void
     {
         $this->nodeStack[] = $node;
     }
@@ -94,21 +100,26 @@ class ParsingState
      * @return mixed
      * @throws \ReflectionException
      */
-    public function getNodesByViewHelperName(string $type, \CarstenWalther\XliffGen\Parser\SyntaxTree\AbstractNode $node, array &$nodes = []) : array
+    public function getNodesByViewHelperName(string $type, AbstractNode $node, array &$nodes = []) : array
     {
         if (is_object($node)) {
-            $reflectionClass = new \ReflectionClass(get_class($node));
+            $reflectionClass = new ReflectionClass(get_class($node));
             foreach ($reflectionClass->getProperties() as $property) {
                 $property->setAccessible(true);
                 if (is_array($property->getValue($node))) {
                     foreach ($property->getValue($node) as $key => $object) {
-                        if (is_object($object)) {
-                            if (get_class($object) === \CarstenWalther\XliffGen\Parser\SyntaxTree\ViewHelperNode::class) {
-                                if ($object->getViewHelperClassName() === $type) {
-                                    $nodes[] = $object;
+                        if (is_object($object) && get_class($object) === ViewHelperNode::class) {
+                            if (is_array($object->getArguments())) {
+                                foreach ($object->getArguments() as $argumentsKey => $argumentsValue) {
+                                    if ($argumentsValue->hasChildNodes()) {
+                                        $this->getNodesByViewHelperName($type, $argumentsValue, $nodes);
+                                    }
                                 }
-                                $this->getNodesByViewHelperName($type, $object, $nodes);
                             }
+                            if ($object->getViewHelperClassName() === $type) {
+                                $nodes[] = $object;
+                            }
+                            $this->getNodesByViewHelperName($type, $object, $nodes);
                         }
                     }
                 }

@@ -4,9 +4,10 @@ namespace CarstenWalther\XliffGen\Domain\Model;
 
 /**
  * Class TranslationUnit
+ *
  * @package CarstenWalther\XliffGen\Domain\Model
  */
-class TranslationUnit
+class TranslationUnit extends AbstractModel
 {
     /**
      * @var string
@@ -49,28 +50,6 @@ class TranslationUnit
     public function __construct()
     {
         $this->alternativeTranslations = [];
-    }
-
-    /**
-     * @return array
-     */
-    public function toArray() : array
-    {
-        $alternativeTranslations = [];
-
-        foreach ($this->getAlternativeTranslations() as $alternativeTranslation) {
-            $alternativeTranslations[] = $alternativeTranslation->toArray();
-        }
-
-        return [
-            'id' => $this->getId(),
-            'resname' => $this->getResname(),
-            'source' => $this->getSource(),
-            'target' => $this->getTarget(),
-            'preserveSpace' => $this->getPreserveSpace(),
-            'wrapWithCdata' => $this->getWrapWithCdata(),
-            'alternativeTranslations' => $alternativeTranslations
-        ];
     }
 
     /**
@@ -133,7 +112,7 @@ class TranslationUnit
     /**
      * @return string
      */
-    public function getTarget() :? string
+    public function getTarget() : ?string
     {
         return $this->target;
     }
@@ -143,7 +122,7 @@ class TranslationUnit
      *
      * @return TranslationUnit
      */
-    public function setTarget(string $target = null) :? TranslationUnit
+    public function setTarget(string $target = null) : ?TranslationUnit
     {
         $this->target = $target;
         return $this;
@@ -211,7 +190,7 @@ class TranslationUnit
      *
      * @return $this
      */
-    public function addAlternative(\CarstenWalther\XliffGen\Domain\Model\AlternativeTranslation $alternativeTranslation) : Xlf
+    public function addAlternative(AlternativeTranslation $alternativeTranslation) : Xlf
     {
         $this->alternativeTranslations[] = $alternativeTranslation;
         return $this;

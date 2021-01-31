@@ -2,6 +2,8 @@
 
 namespace CarstenWalther\XliffGen\Utility;
 
+use RuntimeException;
+
 /**
  * Class Zip
  *
@@ -29,7 +31,7 @@ namespace CarstenWalther\XliffGen\Utility;
  *
  * @package CarstenWalther\XliffGen\Utility
  */
-class Zip
+class ZipUtility
 {
     /**
      * The internal buffer size for file uploads
@@ -121,7 +123,7 @@ class Zip
     public static function sendDir(string $path, $recursive = true, $filter = null) : void
     {
         if (!self::$begun) {
-            throw new \Exception('Begin has not been called yet!');
+            throw new RuntimeException('Begin has not been called yet!');
         }
         $files = self::getFiles($path, $recursive, '', $filter);
         foreach ($files as $file) {
@@ -190,7 +192,7 @@ class Zip
     public static function sendFile(string $file, $name = null, $relativePath = '', $comment = '') : void
     {
         if (!self::$begun) {
-            throw new \Exception('Begin has not been called yet!');
+            throw new RuntimeException('Begin has not been called yet!');
         }
         if ($relativePath !== '' && $relativePath[strlen($relativePath) - 1] !== '/') {
             $relativePath .= '/';
@@ -258,23 +260,23 @@ class Zip
     {
         $nlen = strlen($name);
         if ($nlen > 0xFFFF) {
-            throw new \Exception('The name exceeds the maximum length of 65535 bytes!');
+            throw new RuntimeException('The name exceeds the maximum length of 65535 bytes!');
         }
 
         $extra = '';
         foreach ($extraData as $key => $val) {
-            if (strlen($key) != 2) {
-                throw new \Exception('Extra data keys must be 2 bytes long!');
+            if (strlen($key) !== 2) {
+                throw new RuntimeException('Extra data keys must be 2 bytes long!');
             }
             $l = strlen($val);
             if ($l > 65531) {
-                throw new \Exception('Extra data value exceeds the maximum length of 65531 bytes!');
+                throw new RuntimeException('Extra data value exceeds the maximum length of 65531 bytes!');
             }
             $extra .= $key . self::getUInt16($l) . $val;
         }
         $elen = strlen($extra);
         if ($elen > 0xFFFF) {
-            throw new \Exception('Extra Part exceedes the maximum length of 65535 bytes!');
+            throw new RuntimeException('Extra Part exceedes the maximum length of 65535 bytes!');
         }
 
         $head = "PK\x03\x04"; // Signature
@@ -359,28 +361,28 @@ class Zip
     {
         $nlen = strlen($name);
         if ($nlen > 0xFFFF) {
-            throw new \Exception('The name exceeds the maximum length of 65535 bytes!');
+            throw new RuntimeException('The name exceeds the maximum length of 65535 bytes!');
         }
 
         $extra = '';
         foreach ($extraData as $key => $val) {
             if (strlen($key) !== 2) {
-                throw new \Exception('Extra data keys must be 2 bytes long!');
+                throw new RuntimeException('Extra data keys must be 2 bytes long!');
             }
             $l = strlen($val);
             if ($l > 65531) {
-                throw new \Exception('Extra data value exceeds the maximum length of 65531 bytes!');
+                throw new RuntimeException('Extra data value exceeds the maximum length of 65531 bytes!');
             }
             $extra .= $key . self::getUInt16($l) . $val;
         }
         $elen = strlen($extra);
         if ($elen > 0xFFFF) {
-            throw new \Exception('Extra Part exceedes the maximum length of 65535 bytes!');
+            throw new RuntimeException('Extra Part exceedes the maximum length of 65535 bytes!');
         }
 
         $clen = strlen($comment);
         if ($clen > 0xFFFF) {
-            throw new \Exception('The comment exceedes the maximum length of 65535 bytes!');
+            throw new RuntimeException('The comment exceedes the maximum length of 65535 bytes!');
         }
 
         $head = "PK\x01\x02"; // Signature
@@ -420,7 +422,7 @@ class Zip
     public static function sendData(string $data, string $name, $relativePath = '', $comment = '', $filetime = null) : void
     {
         if (!self::$begun) {
-            throw new \Exception('Begin has not been called yet!');
+            throw new RuntimeException('Begin has not been called yet!');
         }
         if ($relativePath !== '' && $relativePath[strlen($relativePath) - 1] !== '/') {
             $relativePath .= '/';
@@ -470,10 +472,10 @@ class Zip
     public static function end($comment = '') : void
     {
         if (!self::$begun) {
-            throw new \Exception('Begin has not been called yet!');
+            throw new RuntimeException('Begin has not been called yet!');
         }
         if (self::$currFileCount === 0) {
-            throw new \Exception('No file have been sent so there is nothing to end!');
+            throw new RuntimeException('No file have been sent so there is nothing to end!');
         }
 
         // Send central directory
@@ -501,7 +503,7 @@ class Zip
      * @return string
      * @throws \Exception
      */
-    private static function getEndOfCentralDir(int $fileCount, int $size, int $offset, $totalFileCount = null, $disk = 0, $startDisk = 0, $comment = '')
+    private static function getEndOfCentralDir(int $fileCount, int $size, int $offset, $totalFileCount = null, $disk = 0, $startDisk = 0, $comment = '') : string
     {
         if ($totalFileCount === null) {
             $totalFileCount = $fileCount;
@@ -509,7 +511,7 @@ class Zip
 
         $clen = strlen($comment);
         if ($clen > 0xFFFF) {
-            throw new \Exception('The comment exceedes the maximum length of 65535 bytes!');
+            throw new RuntimeException('The comment exceedes the maximum length of 65535 bytes!');
         }
 
         $data = "PK\x05\x06"; // Signature

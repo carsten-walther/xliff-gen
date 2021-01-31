@@ -2,11 +2,16 @@
 
 namespace CarstenWalther\XliffGen\Domain\Repository;
 
+use ArrayAccess;
+use InvalidArgumentException;
+use Iterator;
+
 /**
  * Class AbstractCsvRepository
+ *
  * @package CarstenWalther\XliffGen\Domain\Repository
  */
-abstract class AbstractCsvRepository implements \Iterator, \ArrayAccess
+abstract class AbstractCsvRepository implements Iterator, ArrayAccess
 {
     /**
      * @var string
@@ -82,7 +87,7 @@ abstract class AbstractCsvRepository implements \Iterator, \ArrayAccess
      * @param string $enclosure
      * @param string $escape
      */
-    public function __construct($csvFile, $readOnly=false, $delimiter = ';', $enclosure = '"', $escape = "\\")
+    public function __construct($csvFile, $readOnly = false, $delimiter = ';', $enclosure = '"', $escape = "\\")
     {
         $this->delimiter = $delimiter;
         $this->enclosure = $enclosure;
@@ -90,17 +95,6 @@ abstract class AbstractCsvRepository implements \Iterator, \ArrayAccess
         $this->initCsvFile($csvFile);
         $this->readOnly = $readOnly;
         $this->initCsv();
-    }
-
-    /**
-     * @param $basePath
-     *
-     * @return $this
-     */
-    public function setBasePath($basePath) : AbstractCsvRepository
-    {
-        $this->basePath = $basePath;
-        return $this;
     }
 
     /**
@@ -114,10 +108,10 @@ abstract class AbstractCsvRepository implements \Iterator, \ArrayAccess
             if (is_readable($csvFile)) {
                 $this->csvFile = $csvFile;
             } else {
-                throw new \InvalidArgumentException('CSV file must be readable.');
+                throw new InvalidArgumentException('CSV file must be readable.');
             }
         } else {
-            throw new \InvalidArgumentException('Path to CSV file must be valid.');
+            throw new InvalidArgumentException('Path to CSV file must be valid.');
         }
         return $this;
     }
@@ -135,17 +129,14 @@ abstract class AbstractCsvRepository implements \Iterator, \ArrayAccess
     }
 
     /**
-     * @return void
+     * @param $basePath
+     *
+     * @return $this
      */
-    protected function resetRelatives()
+    public function setBasePath($basePath) : AbstractCsvRepository
     {
-        $this->prev = null;
-        $this->current = null;
-        $this->next = null;
-        $this->key = null;
-        $this->valid = false;
-        $this->isFirst = false;
-        $this->isLast = false;
+        $this->basePath = $basePath;
+        return $this;
     }
 
     /**
@@ -189,19 +180,19 @@ abstract class AbstractCsvRepository implements \Iterator, \ArrayAccess
     }
 
     /**
-     * @return object
-     */
-    function current() : object
-    {
-
-    }
-
-    /**
      * @return bool
      */
     function valid() : bool
     {
         return is_object($this->current());
+    }
+
+    /**
+     * @return object
+     */
+    function current() : object
+    {
+
     }
 
     /**
@@ -245,5 +236,19 @@ abstract class AbstractCsvRepository implements \Iterator, \ArrayAccess
     {
         unset($this->csv[$offset]);
         return $this;
+    }
+
+    /**
+     * @return void
+     */
+    protected function resetRelatives()
+    {
+        $this->prev = null;
+        $this->current = null;
+        $this->next = null;
+        $this->key = null;
+        $this->valid = false;
+        $this->isFirst = false;
+        $this->isLast = false;
     }
 }

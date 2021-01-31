@@ -2,6 +2,8 @@
 
 namespace CarstenWalther\XliffGen\View;
 
+use InvalidArgumentException;
+
 /**
  * Class View
  *
@@ -63,7 +65,7 @@ class View
         if ($layoutPath && is_dir($layoutPath)) {
             $this->layoutPath = $layoutPath;
         } else {
-            throw new \InvalidArgumentException('Layout path must be a valid path.');
+            throw new InvalidArgumentException('Layout path must be a valid path.');
         }
     }
 
@@ -75,7 +77,7 @@ class View
         if ($templatePath && is_dir($templatePath)) {
             $this->templatePath = $templatePath;
         } else {
-            throw new \InvalidArgumentException('Template path must be a valid path.');
+            throw new InvalidArgumentException('Template path must be a valid path.');
         }
     }
 
@@ -108,7 +110,7 @@ class View
      * @param       $template
      * @param false $return
      *
-     * @return false|string
+     * @return false|string|void
      * @throws \SmartyException
      */
     public function render($template, $return = false)
@@ -117,28 +119,6 @@ class View
         $this->templateEngine->assign('content', $this->renderContent($template));
 
         $result = $this->templateEngine->fetch($this->layoutPath . $this->pageTemplate);
-
-        if ($return) {
-            return $result;
-        }
-
-        echo $result;
-    }
-
-    /**
-     * @param       $template
-     * @param false $return
-     *
-     * @return false|string
-     * @throws \SmartyException
-     */
-    public function renderTemplate($template, $return = false)
-    {
-        foreach ($this->variables as $key => $variable) {
-            $this->templateEngine->assign($key, $variable);
-        }
-
-        $result = $this->templateEngine->fetch($this->templatePath . $template);
 
         if ($return) {
             return $result;
@@ -160,5 +140,27 @@ class View
         }
 
         return $this->templateEngine->fetch($this->templatePath . $template);
+    }
+
+    /**
+     * @param       $template
+     * @param false $return
+     *
+     * @return false|string|void
+     * @throws \SmartyException
+     */
+    public function renderTemplate($template, $return = false)
+    {
+        foreach ($this->variables as $key => $variable) {
+            $this->templateEngine->assign($key, $variable);
+        }
+
+        $result = $this->templateEngine->fetch($this->templatePath . $template);
+
+        if ($return) {
+            return $result;
+        }
+
+        echo $result;
     }
 }

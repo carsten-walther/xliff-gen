@@ -2,13 +2,23 @@
 
 namespace CarstenWalther\XliffGen\Domain\Model;
 
+use DateTime;
+
 /**
  * Class Xlf
  *
  * @package CarstenWalther\XliffGen\Domain\Model
  */
-class Xlf
+class Xlf extends AbstractModel
 {
+    public const VERSION_1_0 = '1.0';
+    public const VERSION_1_2 = '1.2';
+
+    /**
+     * @var string
+     */
+    protected $version;
+
     /**
      * @var string
      */
@@ -64,33 +74,27 @@ class Xlf
      */
     public function __construct()
     {
-        $this->date = new \DateTime();
+        $this->date = new DateTime();
         $this->translationUnits = [];
     }
 
     /**
-     * @return array
+     * @return string
      */
-    public function toArray() : array
+    public function getVersion() : string
     {
-        $translationUnits = [];
+        return $this->version ? : self::VERSION_1_0;
+    }
 
-        foreach ($this->getTranslationUnits() as $translationUnit) {
-            $translationUnits[] = $translationUnit->toArray();
-        }
-
-        return [
-            'sourceLanguage' => $this->getSourceLanguage(),
-            'targetLanguage' => $this->getTargetLanguage(),
-            'original' => $this->getOriginal(),
-            'date' => $this->getDate(),
-            'productName' => $this->getProductName(),
-            'translationUnits' => $translationUnits,
-            'description' => $this->getDescription(),
-            'type' => $this->getType(),
-            'authorName' => $this->getAuthorName(),
-            'authorEmail' => $this->getAuthorEmail()
-        ];
+    /**
+     * @param string $version
+     *
+     * @return Xlf
+     */
+    public function setVersion(string $version) : Xlf
+    {
+        $this->version = $version;
+        return $this;
     }
 
     /**
@@ -153,7 +157,7 @@ class Xlf
     /**
      * @return \DateTime
      */
-    public function getDate() : \DateTime
+    public function getDate() : DateTime
     {
         return $this->date;
     }
@@ -163,7 +167,7 @@ class Xlf
      *
      * @return Xlf
      */
-    public function setDate(\DateTime $date) : Xlf
+    public function setDate(DateTime $date) : Xlf
     {
         $this->date = $date;
         return $this;
@@ -212,7 +216,7 @@ class Xlf
      *
      * @return $this
      */
-    public function addTranslationUnit(\CarstenWalther\XliffGen\Domain\Model\TranslationUnit $translationUnit) : Xlf
+    public function addTranslationUnit(TranslationUnit $translationUnit) : Xlf
     {
         $this->translationUnits[] = $translationUnit;
         return $this;

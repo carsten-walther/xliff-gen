@@ -44,6 +44,18 @@
 	<fieldset>
 		<legend>Settings</legend>
 		<div class="row mb-4">
+			<label for="version" class="col-sm-2 col-form-label">
+				XLIFF Version
+			</label>
+			<div class="col-sm-8">
+				<select name="version" id="version" class="form-select" aria-describedby="versionHelp" required>
+					<option value="1.0" selected>1.0</option>
+					<option value="1.2">1.2</option>
+				</select>
+				<div id="versionHelp" class="form-text">Select the version of the generated XLIFF file, usually "1.0".</div>
+			</div>
+		</div>
+		<div class="row mb-4">
 			<label for="type" class="col-sm-2 col-form-label">
 				Type
 			</label>
@@ -106,6 +118,17 @@
 			<div class="col-sm-8">
 				<input type="file" name="files[]" id="files" accept="text/html" class="form-control" aria-describedby="fileHelp" multiple required>
 				<div id="fileHelp" class="form-text">Select one or more html template files. These files will be scanned for f:translate view helpers. The contained keys and the default values will be used for xliff generation.</div>
+			</div>
+		</div>
+		<div class="row mb-4">
+			<div class="offset-sm-2 col-sm-8">
+				<div class="form-check">
+					<input type="checkbox" name="generatePath" id="generatePath" class="form-check-input" aria-describedby="generatePathHelp">
+					<label class="form-check-label" for="generatePath">
+						also generate the target path
+					</label>
+					<div id="generatePathHelp" class="form-text">Active this checkbox to generate the whole path to the language files.</div>
+				</div>
 			</div>
 		</div>
 	</fieldset>

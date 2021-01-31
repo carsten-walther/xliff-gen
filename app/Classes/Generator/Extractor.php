@@ -1,11 +1,18 @@
 <?php
 
-namespace CarstenWalther\XliffGen\Utility;
+namespace CarstenWalther\XliffGen\Generator;
+
+use CarstenWalther\XliffGen\Domain\Model\TranslationUnit;
+use CarstenWalther\XliffGen\Domain\Model\Xlf;
+use CarstenWalther\XliffGen\Parser\Parser;
+use CarstenWalther\XliffGen\Parser\SyntaxTree\TextNode;
+use DateTime;
+use function strpos;
 
 /**
  * Class Extractor
  *
- * @package CarstenWalther\XliffGen\Utility
+ * @package CarstenWalther\XliffGen\Generator
  */
 class Extractor
 {
@@ -35,7 +42,7 @@ class Extractor
         $this->sourceString = $sourceString;
         $this->configuration = $configuration;
 
-        $this->parser = new \CarstenWalther\XliffGen\Parser\Parser();
+        $this->parser = new Parser();
     }
 
     /**
@@ -45,15 +52,17 @@ class Extractor
      * @return null|\CarstenWalther\XliffGen\Domain\Model\Xlf
      * @throws \Exception
      */
-    public function extract($namespace = '', $method = '') : ?\CarstenWalther\XliffGen\Domain\Model\Xlf
+    public function extract($namespace = '', $method = '') : ?Xlf
     {
-        $xlf = new \CarstenWalther\XliffGen\Domain\Model\Xlf();
+        $xlf = new Xlf();
 
+        $xlf->setVersion($this->configuration['version'] ? : null);
+        $xlf->setType($this->configuration['type'] ? : null);
         $xlf->setSourceLanguage($this->configuration['sourceLanguage'] ? : null);
         $xlf->setTargetLanguage($this->configuration['targetLanguage'] ? : null);
         $xlf->setOriginal($this->configuration['original'] ? : null);
         $xlf->setProductName($this->configuration['productName'] ? : null);
-        $xlf->setDate(new \DateTime());
+        $xlf->setDate(new DateTime());
 
         /** @var \CarstenWalther\XliffGen\Parser\ParsingState $parsingState */
         $parsingState = $this->parser->parse($this->sourceString);
@@ -71,11 +80,11 @@ class Extractor
                 $source = $key;
                 $target = '';
 
-                $translationUnit = new \CarstenWalther\XliffGen\Domain\Model\TranslationUnit();
+                $translationUnit = new TranslationUnit();
                 $translationUnit->setId($key);
                 $translationUnit->setResname($resname);
 
-                if ($nodeArguments['default'] instanceof \CarstenWalther\XliffGen\Parser\SyntaxTree\TextNode) {
+                if ($nodeArguments['default'] instanceof TextNode) {
                     $source = $nodeArguments['default']->getText();
                     $target = $this->configuration['targetLanguage'] ? $source : '';
                 }
@@ -88,25 +97,7 @@ class Extractor
                 $xlf->addTranslationUnit($translationUnit);
             }
         }
-
         return $xlf;
-    }
-
-    /**
-     * @param $value
-     * @param $enValue
-     * @param $targetLanguage
-     *
-     * @return bool
-     */
-    protected function shouldPreserveSpace($value, $enValue, $targetLanguage) : bool
-    {
-        $valueContainsSpacesOrLF = \strpos($value, '  ') !== false || \strpos($value, "\n") !== false;
-        $enValueContainsSpacesOrLF = false;
-        if ($targetLanguage !== 'default') {
-            $enValueContainsSpacesOrLF = \strpos($enValue, '  ') !== false || \strpos($enValue, "\n") !== false;
-        }
-        return $valueContainsSpacesOrLF || $enValueContainsSpacesOrLF;
     }
 
     /**
@@ -121,5 +112,22 @@ class Extractor
             $shouldWrappedWithCdata = true;
         }
         return $shouldWrappedWithCdata;
+    }
+
+    /**
+     * @param $value
+     * @param $enValue
+     * @param $targetLanguage
+     *
+     * @return bool
+     */
+    protected function shouldPreserveSpace($value, $enValue, $targetLanguage) : bool
+    {
+        $valueContainsSpacesOrLF = strpos($value, '  ') !== false || strpos($value, "\n") !== false;
+        $enValueContainsSpacesOrLF = false;
+        if ($targetLanguage !== 'default') {
+            $enValueContainsSpacesOrLF = strpos($enValue, '  ') !== false || strpos($enValue, "\n") !== false;
+        }
+        return $valueContainsSpacesOrLF || $enValueContainsSpacesOrLF;
     }
 }

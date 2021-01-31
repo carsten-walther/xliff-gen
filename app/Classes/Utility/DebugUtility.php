@@ -26,7 +26,7 @@ class DebugUtility
         $output .= '    </pre>';
         $output .= '</div>';
 
-        echo $output . (new DebugUtility)->css();
+        echo $output . (new self)->css();
 
         return '';
     }

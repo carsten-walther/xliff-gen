@@ -7,7 +7,7 @@ namespace CarstenWalther\XliffGen\Parser\SyntaxTree;
  *
  * @package CarstenWalther\XliffGen\Parser\SyntaxTree
  */
-class ArrayNode extends \CarstenWalther\XliffGen\Parser\SyntaxTree\AbstractNode
+class ArrayNode extends AbstractNode
 {
     /**
      * An associative array. Each key is a string. Each value is either a literal, or an AbstractNode.

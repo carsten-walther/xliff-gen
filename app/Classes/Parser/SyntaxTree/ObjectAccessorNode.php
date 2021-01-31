@@ -7,10 +7,11 @@ namespace CarstenWalther\XliffGen\Parser\SyntaxTree;
  *
  * @package CarstenWalther\XliffGen\Parser\SyntaxTree
  */
-class ObjectAccessorNode extends \CarstenWalther\XliffGen\Parser\SyntaxTree\AbstractNode
+class ObjectAccessorNode extends AbstractNode
 {
     /**
      * Object path which will be called. Is a list like "post.name.email"
+     *
      * @var string
      */
     protected $objectPath;
